@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import '../Style/Main.css'
+import './Jump.css'
 
 const CELL_SIZE = 40
 

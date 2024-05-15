@@ -1,19 +1,19 @@
 import React, {useState, useEffect} from 'react'
-import '../Style/Main.css'
+import './Jump.css'
 import Board from './Board'
-import Timer from '../Util/Timer'
+import Timer from './Timer'
 
-import Agent from '../Util/Agent'
+import Agent from './Agent'
 
 import Piece from './Piece'
 import { spawnRockRandom, moveAllRocks, jump, gravity, checkRockCollision, calcRockDist, checkInAir } from './GameMechanics'
-import KeyPress from '../Util/KeyPress'
+import KeyPress from './KeyPress'
 
 
-const WIDTH = 4
+const WIDTH = 8
 const HEIGHT = 5
 
-export default function Game(props) {
+export function Jump(props) {
     const [score, setScore] = useState(0)
     const [ticks, setTicks] = useState(0)
 
@@ -35,7 +35,7 @@ export default function Game(props) {
       gravity(setPiece, HEIGHT)
       moveAllRocks(setRocks)
       if(ticks % 3 == 0){
-        spawnRockRandom(setRocks)
+        spawnRockRandom(setRocks, WIDTH)
       }
       if(jumpRequested === 1){
         jump(piece, setPiece, HEIGHT)

@@ -12,7 +12,6 @@ export class tfModel{
         //Input Layer
         const inputLayer = tf.input({shape: [inputShape]})
         //Hidden Layers
-        const dense3 = tf.layers.dense({units: 1, activation: 'linear', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
         const dense2 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
         const dense1 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
         //Output Layer
@@ -21,25 +20,41 @@ export class tfModel{
         //Apply Layers
         let x = dense1.apply(inputLayer)
         x = dense2.apply(x)
-        // x = dense3.apply(x)
         const output = outputLayer.apply(x)
 
-        const model = tf.model({inputs: inputLayer, outputs:output})
+        //Create and compile model
+        let model = tf.model({inputs: inputLayer, outputs:output})
         console.log(model.summary())
         model.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
+
         return model
     }
+    async loadModel(){
+        try{
+            let loadedModel = await tf.loadLayersModel('localstorage://my-model')
+            loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
+            return loadedModel
+        } catch(error){
+            console.error(error)
+        }
+    }
+    async saveModel(){
+        try{
+            this.model.save('localstorage://my-model')
+        } catch(error){
+            console.error(error)
+        }
+    }
+    resetModel(){
+        localStorage.removeItem('my-model')
+        this.model = this.initModel(this.inputShape, this.outputShape)
+      }
     // ob<array> -> tensor
-    trainModel(input){
-        
+    async trainModel(input){
         //existing q values to fill in output tensor aside from newly trained actions
         const onlineOutput = this.predictModel(input.states)
         //Current highest q value for each (next) state
         const maxOnlineQValues = tf.max(onlineOutput, 1).arraySync()
-
-        for(let i=0; i<onlineOutput.length; i++){
-            console.log(onlineOutput[i])
-        }
         for(let i=0; i<input.states.length-1; i++){
             // console.log(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
             if(input.done[i] !== true){
@@ -50,13 +65,15 @@ export class tfModel{
                     onlineOutput[i][j] = input.rewards[i]
                 }
             }
-            
         }
 
         const tfInput = tf.tensor(input.states)
         const targetOutput = {'output': tf.tensor(onlineOutput)}
 
-        let history = this.model.fit(tfInput, targetOutput, {epochs: 3, shuffle: true})
+        let history = await this.model.fit(tfInput, targetOutput, {epochs: 3, shuffle: true})
+        const loss = history.history.loss
+        const accuracy = history.history.acc
+        console.log("loss: ", loss[loss.length-1], "accuracy: ", accuracy[accuracy.length-1])
         return history
     }
     //array -> tensor -> array
@@ -64,5 +81,4 @@ export class tfModel{
         let output = this.model.predict(tf.tensor(input)).arraySync()
         return output
     }
-
 }

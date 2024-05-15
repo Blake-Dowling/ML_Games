@@ -1,9 +1,18 @@
 import React, {useState, useEffect} from 'react'
-import '../Style/Main.css'
+import './Jump.css'
 import { tfModel } from '../Server/ModelManagement'
 
 const tf = require('@tensorflow/tfjs')
 let onlineModel = new tfModel(2, 2)
+console.log(onlineModel)
+let loadedModel = await onlineModel.loadModel()
+if(loadedModel){
+  console.log("Model loaded.")
+  onlineModel.model = loadedModel
+}
+else{
+  console.log("No model loaded.")
+}
 
 let states = []
 let actions = []
@@ -11,7 +20,6 @@ let rewards = []
 let done = []
 
 export default function Agent(props) {
-
   function calcRockDist(piece, rocks, WIDTH){
     let minRockDist = WIDTH
     for(let i=0; i<rocks.length; i++){
@@ -20,27 +28,19 @@ export default function Agent(props) {
     return minRockDist
   }
 
-
   function run(){
-    // console.log(typeof(onlineModel))
     //State
     const rockDist = calcRockDist(props.piece, props.rocks, props.WIDTH)
     const inAir = props.checkInAir(props.piece, props.HEIGHT)
-    // getPrediction([[rockDist, inAir]])
 
     const input = [rockDist, inAir]
     states.push(input)
     const prediction = tf.argMax(tf.tensor(onlineModel.predictModel([input])[0]), 0).arraySync()
-    // console.log(prediction)
     //Action
     let curAction = prediction
     if(prediction > 0){
       props.jump()
     }
-    // if(Math.floor(Math.random()*3) == 0){
-    //   props.jump()
-    //   curAction = 1
-    // }
     actions.push(curAction)
     //Reward
     let reward = 1
@@ -58,15 +58,13 @@ export default function Agent(props) {
     // console.log(states[states.length-1], actions[actions.length-1], rewards[rewards.length-1], done[done.length-1])
     //Training
     if(states.length >= 33){
-      // for(let i=0; i<states.length; i++){
-      //   console.log(states[i], actions[i], rewards[i], done[i])
-      // }
-      onlineModel.trainModel({
+      const history = onlineModel.trainModel({
         'states': states,
         'actions': actions,
         'rewards': rewards,
         'done': done
       })
+      onlineModel.saveModel()
       states = []
       actions = []
       rewards = []
@@ -75,16 +73,16 @@ export default function Agent(props) {
   }
   useEffect(()=>{
     run()
-
   }, [props.piece, props.rocks])
-
-  // useEffect(()=>{
-
-  // }, [predictionBit])
 
   return (
     <div>
-
+      <button
+          className="ai-button"
+          onClick={() => onlineModel.resetModel()}
+      >
+          Reset Model
+      </button>
     </div>
   )
 }

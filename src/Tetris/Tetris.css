@@ -1,0 +1,32 @@
+.main{
+    
+
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; */
+    
+    align-items: center;
+}
+.view{
+    border: 1px solid black;
+    /* min-height: 700px; */
+    display: flex;
+    flex-direction: column;
+}
+.row{
+    display: flex;
+    flex-direction: row;
+    
+}
+.square{
+    border: 1px solid black;
+    /* min-width: 30px;
+    min-height: 30px; */
+}
+.col-labels{
+    display: flex;
+    flex-direction: row;
+}
+.completions{
+    display: flex;
+}
