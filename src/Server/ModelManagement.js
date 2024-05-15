@@ -1,9 +1,10 @@
 const tf = require('@tensorflow/tfjs')
 
 export class tfModel{
-    constructor(inputShape, outputShape){
+    constructor(inputShape, outputShape, name){
         this.inputShape = inputShape
         this.outputShape = outputShape
+        this.name = name
         this.model = this.initModel(inputShape, outputShape)
     }
 
@@ -31,7 +32,7 @@ export class tfModel{
     }
     async loadModel(){
         try{
-            let loadedModel = await tf.loadLayersModel('localstorage://my-model')
+            let loadedModel = await tf.loadLayersModel(`localstorage://${this.name}`)
             loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
             return loadedModel
         } catch(error){
@@ -40,7 +41,7 @@ export class tfModel{
     }
     async saveModel(){
         try{
-            this.model.save('localstorage://my-model')
+            this.model.save(`localstorage://${this.name}`)
         } catch(error){
             console.error(error)
         }

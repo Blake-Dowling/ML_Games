@@ -2,9 +2,9 @@ import React, {useState, useEffect} from 'react'
 import './Tetris.css'
 import axios from 'axios'
 import Timer from './Timer'
-import Board from '../View/Board'
-import KeyPress from '../Controller/KeyPress'
-import Agent from '../Controller/Agent'
+import Board from './Board'
+import KeyPress from './KeyPress'
+import Agent from './Agent'
 
 const CELL_SIZE = 50
 const WIDTH = 6
@@ -90,7 +90,7 @@ class Block{
 // ******************************************************
 // ****************** Main Game Component ******************
 // ******************************************************
-export default function Tetris() {
+export function Tetris() {
     // ****************** Define model states ******************
     const [ticks, setTicks] = useState(0) //Tracks ticks
     const [completions, setCompletions] = useState([])

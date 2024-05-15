@@ -3,7 +3,7 @@ import './Jump.css'
 import { tfModel } from '../Server/ModelManagement'
 
 const tf = require('@tensorflow/tfjs')
-let onlineModel = new tfModel(2, 2)
+let onlineModel = new tfModel(2, 2, 'jump-model')
 console.log(onlineModel)
 let loadedModel = await onlineModel.loadModel()
 if(loadedModel){
