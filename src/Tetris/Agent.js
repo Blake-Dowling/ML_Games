@@ -124,6 +124,12 @@ export default function Agent(props) {
 
   return (
     <div>
+        <button
+          className="ai-button"
+          onClick={() => onlineModel.resetModel()}
+      >
+            Reset Model
+        </button>
     </div>
   )
 }

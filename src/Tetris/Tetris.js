@@ -189,7 +189,7 @@ export function Tetris() {
         <input
             type="range"
             // value={"0"}
-            onChange={e=> {const speeds = [2000, 100, 50]; setSpeed(speeds[e.target.value])}}
+            onChange={e=> {const speeds = [2000, 250, 25]; setSpeed(speeds[e.target.value])}}
             min="0"
             max="2"
             step="1"
