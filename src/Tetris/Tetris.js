@@ -70,9 +70,6 @@ class Block{
                 this.blocks.push([x, y+1])
                 break
         }
-        // if (this.type===0){
-        //     console.log(this.orientation)
-        // }
         // Orient blocks
         this.blocks = this.blocks?.map(prevBlock => {
             let newBlock = JSON.parse(JSON.stringify(prevBlock))
@@ -93,10 +90,8 @@ class Block{
 export function Tetris() {
     // ****************** Define model states ******************
     const [ticks, setTicks] = useState(0) //Tracks ticks
-    const [completions, setCompletions] = useState([])
-    const [aIOn, setAIOn] = useState(false) //Switch for AI
     const [boardOn, setBoardOn] = useState(true) //Switch for Board
-    const [speed, setSpeed] = useState(100) //Switch for Board
+    const [speed, setSpeed] = useState(2000) //Switch for Board
     
     const [squares, setSquares] = useState(null) //Board squares
     const [block, setBlock] = useState(new Block(0, 0, 0, 0)) //Active game piece
@@ -105,18 +100,6 @@ export function Tetris() {
 
     // ****************** Move block down each tick ******************
     useEffect(() => {setBlock(prevBlock=>{ return new Block(prevBlock.x, prevBlock.y+1, prevBlock.orientation, prevBlock.type)})}, [ticks])
-
-    // ****************** Initialize completions ******************
-    useEffect(() => {
-        setCompletions(() => {
-            const typeRow = [0, 0, 0, 0]
-            let types = []
-            for(let i=0; i<5; i ++){
-                types.push(typeRow)
-            }
-            return types
-        })
-    }, [])
 
     // ****************** Spawns new block ******************
     function newBlock(){
@@ -168,76 +151,6 @@ export function Tetris() {
         }
     }
 
-    // ****************** Train ML model ******************
-    function sendTrainBatch(typeInput, heightsInput, xOutput, oOutput){
-        // console.log(typeInput, oOutput)
-        setCompletions(prevCompletions => {
-            let newCompletions = JSON.parse(JSON.stringify(prevCompletions))
-            newCompletions[typeInput][oOutput] ++
-            return newCompletions
-        })
-        const scaledTypeInput = minMaxScaleBlockType(typeInput)
-        const scaledHeightsInput = minMaxScaleHeights(heightsInput)
-        axios.post('http://localhost:3001/trainModel', {
-                typeInput: scaledTypeInput,
-                heightsInput: scaledHeightsInput,
-                xOutput: xOutput,
-                oOutput: oOutput
-            }
-        )
-        .then(response => {
-            // const accuracy = response.data.response.history.acc
-            // console.log("acc: ", response.data.response)
-            const loss = response.data.response.history.loss[2]
-            // const weights = response.data.weights
-            console.log("loss: ", loss)
-            // console.log(weights)
-        })
-        .catch(error => console.error('Error:', error))
-    }
-
-    function minMaxScaleHeights(heights){
-        let newHeights = JSON.parse(JSON.stringify(heights))
-        for(let i=0; i<newHeights.length; i++){
-            newHeights[i] = newHeights[i] / HEIGHT
-        }
-
-        return newHeights
-    }
-
-
-    function minMaxScaleBlockType(blockType){
-        let newBlockType = JSON.parse(JSON.stringify(blockType))
-        newBlockType = newBlockType / 5
-        return [newBlockType]
-    }
-
-    // ****************** Get board column heights ******************
-    function getHeightsInput(prevBlock, squares){
-        let blockType = [prevBlock.type]
-        let heights = []
-        for(let i=0; i<WIDTH; i++){
-            heights.push(0)
-        }
-        if(squares === null){
-            return [blockType, heights]
-        }
-        for(let r=0; r<(squares.length); r++){
-            for(let c=0; c<squares[r].length; c++){
-                if(squares[r][c] === 1 && heights[c] === 0){
-                    heights[c] = HEIGHT - r
-                }
-            }
-        }
-        
-        return [blockType, heights]
-    }
-    function getHeightsInputScaled(prevBlock, squares){
-        let heightsInput = getHeightsInput(prevBlock, squares)
-        let newBlockInput = minMaxScaleBlockType(heightsInput[0])
-        let newHeightsInput = minMaxScaleHeights(heightsInput[1])
-        return [newBlockInput, newHeightsInput]
-    }
     // ******************************************************** 
     // **************************** Render **************************** 
     // ******************************************************** 
@@ -246,17 +159,6 @@ export function Tetris() {
     <div className="main">
         {/**************************** Render Timer ****************************/}
         <Timer ticks={ticks} setTicks={setTicks} speed={speed}/>
-        Completions: {completions?.reduce((accumulator, row) => {
-                        const innerSum = row.reduce((innerAcc, value) => {return innerAcc + value}, 0)
-                        return accumulator + innerSum
-                        }, 0)}
-        <div className="completions">
-        {completions?.map((typeArray, idx) => {
-            return <div>Type {idx}: {typeArray.map((oCount, idx2) => {
-                return <div>{idx===0 && idx2 + ': '} {oCount}</div>
-            })}</div>
-        })}
-        </div>
         <Board 
             cell_size={CELL_SIZE}
             width={WIDTH}
@@ -266,30 +168,17 @@ export function Tetris() {
             block={block}
             ticks={ticks}
             newBlock={newBlock}
-            sendTrainBatch={sendTrainBatch}
-            getHeightsInput={getHeightsInput}
             boardOn={boardOn}
-            setCompletions={setCompletions}
         />
         <KeyPress keyPressCallback={keyPressCallback}/>
         <Agent
-            
-            aIOn={aIOn}
+            WIDTH={WIDTH}
+            HEIGHT={HEIGHT}
             keyPressCallback={keyPressCallback}
             squares={squares}
             block={block}
-
-            getHeightsInputScaled={getHeightsInputScaled}
-
             ticks={ticks}
-
         />
-        <button
-            className="ai-button"
-            onClick={() => setAIOn(prevAIOn => {return !prevAIOn})}
-        >
-            AI
-        </button>
         <button
             className="ai-button"
             onClick={() => setBoardOn(prevBoardOn => {return !prevBoardOn})}
@@ -298,13 +187,13 @@ export function Tetris() {
         </button>
         Speed: {speed / 1000}s
         <input
-        type="range"
-        // value={speed}
-        onChange={e=> {const speeds = [500, 100, 25]; setSpeed(speeds[e.target.value])}}
-        min="0"
-        max="2"
-        step="1"
-        >
+            type="range"
+            // value={"0"}
+            onChange={e=> {const speeds = [2000, 100, 50]; setSpeed(speeds[e.target.value])}}
+            min="0"
+            max="2"
+            step="1"
+            >
         </input>
     </div>
   )

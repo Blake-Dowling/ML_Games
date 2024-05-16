@@ -56,6 +56,7 @@ export class tfModel{
         const onlineOutput = this.predictModel(input.states)
         //Current highest q value for each (next) state
         const maxOnlineQValues = tf.max(onlineOutput, 1).arraySync()
+        console.log(maxOnlineQValues)
         for(let i=0; i<input.states.length-1; i++){
             // console.log(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
             if(input.done[i] !== true){

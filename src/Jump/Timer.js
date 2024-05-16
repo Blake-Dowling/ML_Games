@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 export default function TimerComponent(props){
-  const [speed, setSpeed] = useState(0)
+  const [speed, setSpeed] = useState(1000)
   const handleTick = () => {
     props.setTicks((prevTicks) => prevTicks + 1);
   };

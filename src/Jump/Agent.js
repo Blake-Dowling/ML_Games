@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react'
 import './Jump.css'
 import { tfModel } from '../Server/ModelManagement'
-
 const tf = require('@tensorflow/tfjs')
+
 let onlineModel = new tfModel(2, 2, 'jump-model')
 console.log(onlineModel)
 let loadedModel = await onlineModel.loadModel()

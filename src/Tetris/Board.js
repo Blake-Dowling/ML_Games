@@ -44,31 +44,6 @@ export default function Board(props) {
         return (blockX >= 0 && blockX <= WIDTH-1 && blockY >=0 && blockY <= HEIGHT-1)
     }
 
-    // ****************** Heuristic: Check if placement ******************
-    // ****************** results in no gaps ******************
-    function noGaps(block, newSquares){
-        for(let i=0; i<block?.blocks?.length; i++){
-            const lowerBlock = [block?.blocks[i][0], block?.blocks[i][1]+1]
-            if(blockInBounds(lowerBlock)){      
-                if(newSquares[lowerBlock[1]][lowerBlock[0]] == 0){
-                    return false
-                }
-            }
-        }
-        return true
-    }
-    // ****************** Heuristic: Check if one square ******************
-    // ****************** is in lowest board height ******************
-    function lowest(block, prevSquares){
-        const minHeight = Math.min(...(props.getHeightsInput(block, prevSquares)[1]))
-        for(let i=0; i<block?.blocks?.length; i++){
-            const square = [block?.blocks[i][0], block?.blocks[i][1]]
-            if((props.height - square[1] - 1) == minHeight){
-                return true
-            }
-        }
-        return false
-    }
 
     // ****************** Add block to squares ******************
     function addBlockToSquares(block){
@@ -86,12 +61,6 @@ export default function Board(props) {
             return newSquares
         })
 
-        const noGapsRes = noGaps(prevBlock, newSquares)
-        const lowestRes = lowest(prevBlock, prevSquares)
-        if(noGapsRes && lowestRes){
-            const heightsInput = props.getHeightsInput(prevBlock, prevSquares)
-            props.sendTrainBatch(heightsInput[0], heightsInput[1], lastXCompletion, lastOrientation)
-        }
     }
 
     // ****************** Check if block needs to stop ******************
@@ -147,11 +116,8 @@ export default function Board(props) {
                 }
             }
             if(complete){
-                const heightsInput = props.getHeightsInput(prevBlock, prevSquares)
-                // props.sendTrainBatch(heightsInput[0], heightsInput[1], lastXCompletion, lastOrientation)
                 handleCompleteRow(r)
                 r --
-                // props.setCompletions(prevCompletions => {return prevCompletions + 1})
             }
         }
     }
