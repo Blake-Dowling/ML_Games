@@ -9,7 +9,7 @@ export class Piece{
     constructor(x, y, val){
         this.x = x
         this.y = y
-        this.val = val
+        this.val = val 
         this.init()
     }
     init(){
@@ -40,10 +40,11 @@ export class Piece{
 
 }
 export class Board{
-    constructor(width, height){
+    constructor(width, height, pieces){
         this.width = width
         this.height = height
-        this.refresh()
+        this.pieces = pieces
+        this.draw()
     }
     refresh(){
         const rows = []
@@ -60,10 +61,10 @@ export class Board{
         return pixel.x < 0 || pixel.x >= this.width || pixel.y < 0 || pixel.y >= this.height
     }
     //Todo: multicell object
-    draw(pieces){
+    draw(){
         this.refresh()
-        for(let i=0; i<pieces.length; i++){
-            const pixels = pieces[i].pixels
+        for(let i=0; i<this.pieces.length; i++){
+            const pixels = this.pieces[i].pixels
             for(let j=0; j<pixels.length; j++){
                 const pixel = pixels[j]
                 if(!this.ob(pixel)){
@@ -79,7 +80,7 @@ export class Board{
             if(this.ob(below)){
                 return true
             }
-            if(this.board[below.y][below.x] > 0){
+            if(this.board[below.y][below.x] == 1){
                 return true
             }
             return false

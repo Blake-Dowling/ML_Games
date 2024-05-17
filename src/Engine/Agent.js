@@ -3,7 +3,7 @@ import React, {useState, useEffect} from 'react'
 import { tfModel } from '../Server/ModelManagement'
 const tf = require('@tensorflow/tfjs')
 
-let onlineModel = new tfModel(2, 2, 'jump-model')
+let onlineModel = new tfModel(2, 3, 'jump-model')
 console.log(onlineModel)
 let loadedModel = await onlineModel.loadModel()
 if(loadedModel){
@@ -41,7 +41,7 @@ export function Agent(props) {
         'rewards': rewards,
         'done': done
       })
-      // onlineModel.saveModel()
+      onlineModel.saveModel()
       states = []
       actions = []
       rewards = []
@@ -50,7 +50,7 @@ export function Agent(props) {
   }
   useEffect(()=>{
     run()
-  }, [props.pieces])
+  }, [props.state])
 
   return (
     <div>

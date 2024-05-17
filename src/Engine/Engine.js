@@ -17,11 +17,11 @@ export function Engine(props) {
     const [WIDTH, setWIDTH] = useState(8)
     const [HEIGHT, setHEIGHT] = useState(5)
     const [board, setBoard] = useState(null)
-    const [pieces, setPieces] = useState([])
     const [state, setState] = useState([0, 0])
+    const [action, setAction] = useState(0)
     const [reward, setReward] = useState(0)
     const [done, setDone] = useState(false)
-    const [action, setAction] = useState(0)
+
 
 
 
@@ -41,17 +41,14 @@ export function Engine(props) {
             ticks={ticks}
             score={score}
             setScore={setScore}
-            WIDTH={WIDTH}
             setWIDTH={setWIDTH}
-            HEIGHT={HEIGHT}
             setHEIGHT={setHEIGHT}
             board={board}
-            pieces={pieces}
-            setPieces={setPieces}
+            setBoard={setBoard}
             setState={setState}
+            action={action}
             setReward={setReward}
             setDone={setDone}
-            action={action}
         />
         <View
           ticks={ticks}
@@ -59,17 +56,15 @@ export function Engine(props) {
           HEIGHT={HEIGHT}
           board={board}
           setBoard={setBoard}
-          pieces={pieces}
         />
         <KeyPress setAction={setAction}/>
-        {/* <Test ticks={ticks}/> */}
         <Agent
           state={state}
-          reward={reward}
-          done={done}
           action={action}
           setAction={setAction}
-          pieces={pieces}
+          reward={reward}
+          done={done}
+          board={board}
         />
       </div>
     )

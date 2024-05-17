@@ -10,16 +10,8 @@ export function View(props) {
     const setBoard = props.setBoard
 
     useEffect(() => {
-        props.setBoard(new Board(props.WIDTH, props.HEIGHT))
+        props.setBoard(new Board(props.WIDTH, props.HEIGHT, []))
     }, [])
-
-    useEffect(() => {
-        setBoard(prevBoard => {
-            prevBoard?.draw(props.pieces)
-            return prevBoard
-        })
-    }, [props.pieces])
-
 
     function cellColor(rowIndex, columnIndex){
         const cellVal = board?.board[rowIndex][columnIndex]

@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import './Jump.css'
 
-import { Piece } from '../Engine/Objects'
+import { Piece, Board } from '../Engine/Objects'
 
 
 
@@ -25,11 +25,18 @@ export function Jump(props) {
       initGame()
     }, [])
 
-
+    function updatePieces(pieces){
+      props.setBoard(prevBoard => {
+        if(prevBoard){
+          return new Board(prevBoard?.width, prevBoard?.height, pieces)
+        }
+      })
+    }
 
     function movePlayer(player, board, action){
       if(board?.grounded(player)){ //Jump
-          player.y -= 2*action
+        console.log(board?.grounded(player))
+          player.y -= action
       }
       else{ //Gravity
           player.y += 1
@@ -63,15 +70,17 @@ export function Jump(props) {
     }
 
     function run(){
-      //Trigger state update, agent render
-      props.setPieces([player, ...rocks])
-      //State
-      const rockDist = calcRockDist(player, rocks, props.WIDTH)
-      const inAir = checkInAir(player, props.HEIGHT)
-      props.setState([rockDist, inAir])
+
       //Action
       player = movePlayer(player, props.board, props.action)
       rocks = moveRocks(rocks)
+      //State
+      const rockDist = calcRockDist(player, rocks, WIDTH)
+      const inAir = checkInAir(player, HEIGHT)
+      props.setState([rockDist, inAir])
+
+      //Trigger state update, agent render
+      updatePieces([player, ...rocks])
       //Reward, done
       if(checkCollision(player, rocks)){
         props.setReward(-20)
@@ -87,7 +96,7 @@ export function Jump(props) {
         props.setDone(false)
       }
 
-      if((props.ticks % 3 < 2) * (Math.floor(Math.random()*2))){
+      if((props.ticks % 4 < 2) * (Math.floor(Math.random()*2))){
         rocks.push(new Piece(WIDTH-1, HEIGHT-1, 2))
       }
       props.setScore(prevScore => {
