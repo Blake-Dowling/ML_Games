@@ -1,80 +1,111 @@
 import React, {useState, useEffect} from 'react'
 import './Jump.css'
-import Board from './Board'
-import Timer from './Timer'
 
-import Agent from './Agent'
+import { Piece } from '../Engine/Objects'
 
-import Piece from './Piece'
-import { spawnRockRandom, moveAllRocks, jump, gravity, checkRockCollision, calcRockDist, checkInAir } from './GameMechanics'
-import KeyPress from './KeyPress'
 
 
 const WIDTH = 8
 const HEIGHT = 5
 
+let player = new Piece(0,4,1)
+let rocks = []
+
 export function Jump(props) {
-    const [score, setScore] = useState(0)
-    const [ticks, setTicks] = useState(0)
 
-    const [piece, setPiece] = useState(new Piece(0,4,1))
-    const [rocks, setRocks] = useState([])
-    const [jumpRequested, setJumpRequested] = useState(0)
+    function initGame(){
+      player = new Piece(0,4,1)
+      rocks = []
+      props.setScore(0)
+    }
 
-    function resetGame(){
-      setPiece(new Piece(0,4,1))
-      setRocks([])
-      setScore(0)
+    useEffect(() => {
+      props.setWIDTH(WIDTH)
+      props.setHEIGHT(HEIGHT)
+      initGame()
+    }, [])
+
+
+
+    function movePlayer(player, board, action){
+      if(board?.grounded(player)){ //Jump
+          player.y -= 2*action
+      }
+      else{ //Gravity
+          player.y += 1
+      }
+      return new Piece(player.x, player.y, player.val)
+    }
+    function moveRocks(rocks){
+        for(let i=0; i<rocks.length; i++){
+            rocks[i].move(-1, 0)
+        }
+        return rocks
+    }
+    function checkCollision(piece, rocks){
+      for(let i=0; i<rocks.length; i++){
+          if(piece.colliding(rocks[i])){
+              return true
+          }
+      }
+      return false
+    }
+    function checkInAir(piece, HEIGHT){
+      return piece.y < (HEIGHT - 1)
+    }
+  
+    function calcRockDist(piece, rocks, WIDTH){
+      let minRockDist = WIDTH
+      for(let i=0; i<rocks.length; i++){
+          minRockDist = Math.min(minRockDist, piece.dist(rocks[i]))
+      }
+      return minRockDist
+    }
+
+    function run(){
+      //Trigger state update, agent render
+      props.setPieces([player, ...rocks])
+      //State
+      const rockDist = calcRockDist(player, rocks, props.WIDTH)
+      const inAir = checkInAir(player, props.HEIGHT)
+      props.setState([rockDist, inAir])
+      //Action
+      player = movePlayer(player, props.board, props.action)
+      rocks = moveRocks(rocks)
+      //Reward, done
+      if(checkCollision(player, rocks)){
+        props.setReward(-20)
+        props.setDone(true)
+        initGame()
+      }
+      else if(props.score % 20 == 0){
+        props.setReward(20)
+        props.setDone(true)
+      }
+      else{
+        props.setReward(1)
+        props.setDone(false)
+      }
+
+      if((props.ticks % 3 < 2) * (Math.floor(Math.random()*2))){
+        rocks.push(new Piece(WIDTH-1, HEIGHT-1, 2))
+      }
+      props.setScore(prevScore => {
+        return prevScore + 1
+      })
+
     }
 
     //Event loop
     useEffect(() => {
-      if(checkRockCollision(piece, rocks)){
-        resetGame()
-      }
-      gravity(setPiece, HEIGHT)
-      moveAllRocks(setRocks)
-      if(ticks % 3 == 0){
-        spawnRockRandom(setRocks, WIDTH)
-      }
-      if(jumpRequested === 1){
-        jump(piece, setPiece, HEIGHT)
-        setJumpRequested(0)
-      }
-      setScore(prevScore => {
-        return prevScore + 1
-      })
-    }, [ticks])
 
+      run()
 
+    }, [props.ticks])
 
     return (
       <div>
-        Score: {score}
-        <Timer
-          ticks={ticks}
-          setTicks={setTicks}
-        />
-        <Board
-          ticks={ticks}
-          WIDTH={WIDTH}
-          HEIGHT={HEIGHT}
-          piece={piece}
-          rocks={rocks}
-        />
-        <KeyPress gameJumpHandler={() => {setJumpRequested(1)}}/>
-        {/* <Test ticks={ticks}/> */}
-        <Agent
-          score={score}
-          jump={() => {setJumpRequested(1)}}
-          piece={piece}
-          rocks={rocks}
-          WIDTH={WIDTH}
-          HEIGHT={HEIGHT}
-          checkRockCollision={checkRockCollision}
-          checkInAir={checkInAir}
-          jumpRequested={jumpRequested} //action
-        />
+        
       </div>
     )
   }

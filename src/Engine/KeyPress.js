@@ -5,7 +5,7 @@ class KeyPress extends React.Component {
   keyPressCallback(key){
     switch(key){
         case 'ArrowUp':
-            this.props.gameJumpHandler()
+            this.props.setAction(1)
             break
     }
   }
