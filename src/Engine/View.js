@@ -15,7 +15,7 @@ export function View(props) {
 
     function cellColor(rowIndex, columnIndex){
         const cellVal = board?.board[rowIndex][columnIndex]
-        return cellVal == 2 ? 'red' : cellVal == 1 ? 'black' : 'white'
+        return cellVal == 3 ? 'lime' : cellVal == 2 ? 'red' : cellVal == 1 ? 'black' : 'white'
     }
 
     return (

@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react'
-
 import { View } from './View'
 import { Timer } from './Timer'
 import { Jump } from '../Jump/Jump'
+import { Tetris } from '../Tetris/Tetris'
 
 import { Agent } from './Agent'
 
@@ -11,7 +11,7 @@ import KeyPress from './KeyPress'
 
 
 export function Engine(props) {
-
+    const [game, setGame] = useState(1)
     const [score, setScore] = useState(0)
     const [ticks, setTicks] = useState(0)
     const [WIDTH, setWIDTH] = useState(0)
@@ -22,7 +22,7 @@ export function Engine(props) {
     const [reward, setReward] = useState(0)
     const [done, setDone] = useState(false)
     const [modelParams, setModelParams] = useState(null)
-
+    
     return (
       <div>
         Score: {score}
@@ -30,7 +30,8 @@ export function Engine(props) {
           ticks={ticks}
           setTicks={setTicks}
         />
-        <Jump
+        
+        {game===0 && <Jump
             ticks={ticks}
             score={score}
             setScore={setScore}
@@ -43,7 +44,23 @@ export function Engine(props) {
             setReward={setReward}
             setDone={setDone}
             setModelParams={setModelParams}
-        />
+            setGame={setGame}
+        />}
+        {game===1 && <Tetris
+            ticks={ticks}
+            score={score}
+            setScore={setScore}
+            setWIDTH={setWIDTH}
+            setHEIGHT={setHEIGHT}
+            board={board}
+            setBoard={setBoard}
+            setState={setState}
+            action={action}
+            setReward={setReward}
+            setDone={setDone}
+            setModelParams={setModelParams}
+            setGame={setGame}
+        />}
         <View
           ticks={ticks}
           WIDTH={WIDTH}

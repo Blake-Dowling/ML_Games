@@ -58,7 +58,7 @@ export function Agent(props) {
     }
   }
   useEffect(()=>{
-    if(onlineModel){
+    if(onlineModel && props.state){
       run()
     }
   }, [props.state])

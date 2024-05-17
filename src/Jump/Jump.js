@@ -26,7 +26,7 @@ export function Jump(props) {
       initGame()
     }, [])
 
-    function updatePieces(pieces){
+    function updateBoard(pieces){
       props.setBoard(prevBoard => {
         if(prevBoard){
           return new Board(prevBoard?.width, prevBoard?.height, pieces)
@@ -36,7 +36,6 @@ export function Jump(props) {
 
     function movePlayer(player, board, action){
       if(board?.grounded(player)){ //Jump
-        console.log(board?.grounded(player))
           player.y -= action
       }
       else{ //Gravity
@@ -111,7 +110,7 @@ export function Jump(props) {
         return prevScore + 1
       })
       //Trigger state update, agent render
-      updatePieces([player, ...rocks])
+      updateBoard([player, ...rocks])
 
     }
 
@@ -120,13 +119,16 @@ export function Jump(props) {
       if(props.board){
         run()
       }
-
-
     }, [props.ticks])
 
     return (
       <div>
-        
+          <button
+            className="ai-button"
+            onClick={() => props.setGame(1)}
+          >
+            Tetris
+        </button>
       </div>
     )
   }

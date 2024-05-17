@@ -28,15 +28,15 @@ export default function Board(props) {
     }, [])
 
     // ****************** Every time block moves ******************
-    useEffect(() => {
-        checkBlockStop(props.block)
-    }, [props.block])
+    // useEffect(() => {
+    //     checkBlockStop(props.block)
+    // }, [props.block])
         
     // ****************** Every time board changes ******************
-    useEffect(() => {
-        checkCompleteRows()
-        checkFullColumn()
-    }, [squares])
+    // useEffect(() => {
+    //     checkCompleteRows()
+    //     checkFullColumn()
+    // }, [squares])
 
     function blockInBounds(block){
         const blockX = block[0]
@@ -64,22 +64,22 @@ export default function Board(props) {
     }
 
     // ****************** Check if block needs to stop ******************
-    function checkBlockStop(block){
-        //Todo: loop through block squares
-        if(block === undefined){
-            return
-        }
-        for(let i=0; i<block.blocks.length; i++){
-            let curBlock = block.blocks[i]
-            if(curBlock[1] == HEIGHT-1 || (squares && blockInBounds(curBlock) && squares[(curBlock[1])+1][curBlock[0]] === 1)){
-                lastXCompletion = block?.x
-                lastOrientation = block?.orientation
-                addBlockToSquares(block)
-                props.newBlock()
-                break
-            }
-        }
-    }
+    // function checkBlockStop(block){
+    //     //Todo: loop through block squares
+    //     if(block === undefined){
+    //         return
+    //     }
+    //     for(let i=0; i<block.blocks.length; i++){
+    //         let curBlock = block.blocks[i]
+    //         if(curBlock[1] == HEIGHT-1 || (squares && blockInBounds(curBlock) && squares[(curBlock[1])+1][curBlock[0]] === 1)){
+    //             lastXCompletion = block?.x
+    //             lastOrientation = block?.orientation
+    //             addBlockToSquares(block)
+    //             props.newBlock()
+    //             break
+    //         }
+    //     }
+    // }
 
     function mDArrayContains(mDArray, el){
         return mDArray?.map(e=>{return e.toString() === el.toString()}).includes(true)
@@ -107,20 +107,20 @@ export default function Board(props) {
     }
 
     // ****************** Check each row for completion ******************
-    function checkCompleteRows(){
-        for(let r=(squares?.length)-1; r>=0; r--){
-            let complete = true
-            for(let c=0; c<squares[r]?.length; c++){
-                if(squares[r][c] == 0){
-                    complete = false
-                }
-            }
-            if(complete){
-                handleCompleteRow(r)
-                r --
-            }
-        }
-    }
+    // function checkCompleteRows(){
+    //     for(let r=(squares?.length)-1; r>=0; r--){
+    //         let complete = true
+    //         for(let c=0; c<squares[r]?.length; c++){
+    //             if(squares[r][c] == 0){
+    //                 complete = false
+    //             }
+    //         }
+    //         if(complete){
+    //             handleCompleteRow(r)
+    //             r --
+    //         }
+    //     }
+    // }
 
     // ****************** Check if column full ******************
     function checkFullColumn(){

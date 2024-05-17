@@ -1,155 +1,171 @@
 import React, {useState, useEffect} from 'react'
 import './Tetris.css'
-import axios from 'axios'
-import Timer from './Timer'
-import Board from './Board'
-import KeyPress from './KeyPress'
-import Agent from './Agent'
+import { Board, Piece, TetrisBlock } from '../Engine/Objects'
 
-const CELL_SIZE = 50
 const WIDTH = 6
 const HEIGHT = 10
 
-// ****************** Block Class ******************
-class Block{
-    constructor(x, y, orientation, type){
-        this.init(x, y, orientation, type)
-        let minX = 0
-        let maxX = 0
-        for(let i=0; i<this.blocks.length; i++){
-            minX = Math.min(this.blocks[i][0] - 0, minX)
-            maxX = Math.min((WIDTH-1) - this.blocks[i][0], maxX)
-        }
-        this.init(x - minX + maxX, y, orientation, type)
-    }
-    init(x, y, orientation, type){
-        this.x = x
-        this.y = y
-        this.orientation = orientation
-        this.type = type
-        this.blocks = []
-        //  Initialize shape
-        switch(this.type){
-            //Square
-            case 0:
-                this.orientation = 0
-                this.blocks.push([x, y])
-                this.blocks.push([x+1, y])
-                this.blocks.push([x, y+1])
-                this.blocks.push([x+1, y+1])
-                break
-            //Line
-            case 1:
-                // this.blocks.push([x-1, y])
-                this.orientation = this.orientation % 2
-                this.blocks.push([x, y])
-                this.blocks.push([x+1, y])
-                this.blocks.push([x+2, y])
-                this.blocks.push([x+3, y])
-                break
-            //ZigZag
-            case 2:
-                this.orientation = this.orientation % 2
-                this.blocks.push([x-1, y])
-                this.blocks.push([x, y])
-                this.blocks.push([x, y+1])
-                this.blocks.push([x+1, y+1])
-                break
-            //L
-            case 3:
-                this.blocks.push([x-1, y])
-                this.blocks.push([x, y])
-                this.blocks.push([x-1, y+1])
-                this.blocks.push([x+1, y])
-                break
-            //T
-            case 4:
-                this.blocks.push([x-1, y])
-                this.blocks.push([x, y])
-                this.blocks.push([x+1, y])
-                this.blocks.push([x, y+1])
-                break
-        }
-        // Orient blocks
-        this.blocks = this.blocks?.map(prevBlock => {
-            let newBlock = JSON.parse(JSON.stringify(prevBlock))
-            for(let i=0; i<this.orientation; i++){
-                const xDiff = newBlock[0] - x
-                const yDiff = newBlock[1] - y
-                const newXDiff = yDiff * -1
-                const newYDiff = xDiff
-                newBlock = [x + newXDiff, y + newYDiff]
-            }
-            return newBlock
-        })
-    }
-}
+let player = null
+let restingPixels = []
+let workingBoard = null
+
 // ******************************************************
 // ****************** Main Game Component ******************
 // ******************************************************
-export function Tetris() {
-    // ****************** Define model states ******************
-    const [ticks, setTicks] = useState(0) //Tracks ticks
-    const [boardOn, setBoardOn] = useState(true) //Switch for Board
-    const [speed, setSpeed] = useState(2000) //Switch for Board
-    
-    const [squares, setSquares] = useState(null) //Board squares
-    const [block, setBlock] = useState(new Block(0, 0, 0, 0)) //Active game piece
-    
-    useEffect(() => {newBlock()}, []) // Spawn block on init
-
-    // ****************** Move block down each tick ******************
-    useEffect(() => {setBlock(prevBlock=>{ return new Block(prevBlock.x, prevBlock.y+1, prevBlock.orientation, prevBlock.type)})}, [ticks])
+export function Tetris(props) {
+    function initGame(){
+        player = newBlock()
+        restingPixels = []
+        workingBoard = new Board(WIDTH, HEIGHT, [player])
+        props.setScore(0)
+      }
+    useEffect(() => {
+        props.setModelParams([WIDTH+1, 4*WIDTH, 'tetris-model'])
+        props.setWIDTH(WIDTH)
+        props.setHEIGHT(HEIGHT)
+        initGame()
+    }, []) 
 
     // ****************** Spawns new block ******************
     function newBlock(){
-        setBlock(new Block(
+        return new TetrisBlock(
             Math.floor(Math.random()*WIDTH), 
             0, 
-            // 1,
-            // 0,
             Math.floor(Math.random()*4),
-            // 4))
-            Math.floor(Math.random()*5)
-            ))
+            Math.floor(Math.random()*5),
+            3
+            )
     }
 
-    // ****************** Moves block ******************
-    function moveBlock(axis, amount){
-        setBlock(prevBlock => {
-            if(axis === 'x' && squares[prevBlock.y][(prevBlock.x) + amount] != 1){
-                return new Block(Math.max(Math.min((prevBlock.x) + amount, WIDTH - 1), 0), prevBlock.y, prevBlock.orientation, prevBlock.type)
-            }
-            if(axis === 'y'){
-                return new Block(prevBlock.x, Math.max(Math.min((prevBlock.y) + amount, HEIGHT - 1), 0), prevBlock.orientation, prevBlock.type)
-            }
-            return prevBlock
-        })
-    }
-    // ****************** Rotates block ******************
-    function rotateBlock(){
-        setBlock(prevBlock => {
-            return new Block(prevBlock.x, prevBlock.y, (prevBlock.orientation + 1) % 4, prevBlock.type)
-        })
-    }
 
-    // ****************** Arrow key event handler ******************
-    function keyPressCallback(key){
-        switch(key){
-            case 'ArrowRight':
-                moveBlock('x', 1)
-                break
-            case 'ArrowDown':
-                moveBlock('y', 1)
-                break
-            case 'ArrowLeft':
-                moveBlock('x', -1)
-                break
-            case 'ArrowUp':
-                rotateBlock()
-                break
+    function gravityPlayer(player, board){
+        if(!board?.grounded(player)){
+              player.y += 1
         }
+        return new TetrisBlock(player.x, player.y, player.orientation, player.type)
     }
+    function movePlayer(player, board, action){
+        player.orientation = parseInt(action / WIDTH)
+        player.x = parseInt(action % WIDTH)
+        return new TetrisBlock(player.x, player.y, player.orientation, player.type)
+    }
+    function updateBoard(){
+        props.setBoard(prevBoard => {
+            return new Board(prevBoard?.width, prevBoard?.height, [player, ...restingPixels])
+        })
+      }
+    // ****************** Get board column heights ******************
+    function getHeights(board){
+        let heights = []
+        for(let i=0; i<WIDTH; i++){
+            heights.push(0)
+        }
+        if(board === null){
+            return heights
+        }
+        for(let r=0; r<(board?.length); r++){
+            for(let c=0; c<board[r].length; c++){
+                if(board[r][c] === 1 && heights[c] === 0){
+                    heights[c] = HEIGHT - r
+                }
+            }
+        }
+        return heights
+    }
+    function checkBlockStop(){
+        if(workingBoard.grounded(player)){
+            const newPieces = []
+            for(let i=0; i<player.pixels.length; i++){
+                newPieces.push(new Piece(player.pixels[i].x, player.pixels[i].y, 1))
+            }
+            restingPixels = restingPixels.concat(...newPieces)
+            player = newBlock()
+        }
+        workingBoard = new Board(workingBoard.width, workingBoard.height, [player, ...restingPixels])
+    }
+    function checkCompleteRows(){
+        let numCompleteRows = 0
+        for(let i=workingBoard.board.length-1; i>=0; i--){
+            let complete = true
+            for(let j=0; j<workingBoard.board[i].length; j++){
+                if(workingBoard.board[i][j].val !== 1){
+                    complete = false
+                    break
+                }
+            }
+            if(complete){
+                numCompleteRows ++
+                workingBoard.board.splice(i, 1)
+            }
+        }
+        restingPixels = []
+        for(let i=workingBoard.board.length-1; i>=0; i--){
+            for(let j=0; j<workingBoard.board[i].length; j++){
+                if(workingBoard.board[i][j] > 0){
+                    restingPixels.push(new Piece(j, i, workingBoard.board[i][j]))
+                }
+            }
+        }
+        return numCompleteRows
+    }
+    function checkFullColumn(){
+        for(let i=0; i<workingBoard.board[0].length; i++){
+            if(workingBoard.board[0][i] > 0){
+                initGame()
+                return 1
+            }
+        }
+        return 0
+    }
+    function run(){
+        //Action
+
+        player = movePlayer(player, props.board, props.action)
+        player = gravityPlayer(player, props.board)
+
+        //State
+        const state = [player.type].concat(getHeights(props.board.board))
+        props.setState(state)
+        // //Reward
+        workingBoard = new Board(props.board.width, props.board.height, [player, ...restingPixels])
+
+        checkBlockStop()
+
+        workingBoard = new Board(props.board.width, props.board.height, restingPixels)
+        const numCompleteRows = checkCompleteRows()
+
+        const fullColumn = checkFullColumn()
+        let reward = 0
+        reward += 10 * numCompleteRows
+        reward -= 20 * fullColumn
+        props.setReward(reward)
+        props.setDone(reward!==0)
+        //Trigger state update, agent render
+        updateBoard()
+    }
+    //Event loop
+    useEffect(() => {
+        if(player && props.board){
+          run()
+        }
+      }, [props.ticks])
+    // ****************** Arrow key event handler ******************
+    // function keyPressCallback(key){
+    //     switch(key){
+    //         case 'ArrowRight':
+    //             moveBlock('x', 1)
+    //             break
+    //         case 'ArrowDown':
+    //             moveBlock('y', 1)
+    //             break
+    //         case 'ArrowLeft':
+    //             moveBlock('x', -1)
+    //             break
+    //         case 'ArrowUp':
+    //             rotateBlock()
+    //             break
+    //     }
+    // }
 
     // ******************************************************** 
     // **************************** Render **************************** 
@@ -157,44 +173,8 @@ export function Tetris() {
   return (
     // **************************** Render Screen **************************** 
     <div className="main">
-        {/**************************** Render Timer ****************************/}
-        <Timer ticks={ticks} setTicks={setTicks} speed={speed}/>
-        <Board 
-            cell_size={CELL_SIZE}
-            width={WIDTH}
-            height={HEIGHT}
-            squares={squares}
-            setSquares={setSquares}
-            block={block}
-            ticks={ticks}
-            newBlock={newBlock}
-            boardOn={boardOn}
-        />
-        <KeyPress keyPressCallback={keyPressCallback}/>
-        <Agent
-            WIDTH={WIDTH}
-            HEIGHT={HEIGHT}
-            keyPressCallback={keyPressCallback}
-            squares={squares}
-            block={block}
-            ticks={ticks}
-        />
-        <button
-            className="ai-button"
-            onClick={() => setBoardOn(prevBoardOn => {return !prevBoardOn})}
-        >
-            Show
-        </button>
-        Speed: {speed / 1000}s
-        <input
-            type="range"
-            // value={"0"}
-            onChange={e=> {const speeds = [2000, 250, 25]; setSpeed(speeds[e.target.value])}}
-            min="0"
-            max="2"
-            step="1"
-            >
-        </input>
+
+
     </div>
   )
 }

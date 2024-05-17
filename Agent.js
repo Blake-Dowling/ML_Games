@@ -20,24 +20,24 @@ let done = []
 
 export default function Agent(props) {
 
-    // ****************** Get board column heights ******************
-    function getHeights(squares){
-        let heights = []
-        for(let i=0; i<props.WIDTH; i++){
-            heights.push(0)
-        }
-        if(squares === null){
-            return heights
-        }
-        for(let r=0; r<(squares?.length); r++){
-            for(let c=0; c<squares[r].length; c++){
-                if(squares[r][c] === 1 && heights[c] === 0){
-                    heights[c] = props.HEIGHT - r
-                }
-            }
-        }
-        return heights
-    }
+    // // ****************** Get board column heights ******************
+    // function getHeights(squares){
+    //     let heights = []
+    //     for(let i=0; i<props.WIDTH; i++){
+    //         heights.push(0)
+    //     }
+    //     if(squares === null){
+    //         return heights
+    //     }
+    //     for(let r=0; r<(squares?.length); r++){
+    //         for(let c=0; c<squares[r].length; c++){
+    //             if(squares[r][c] === 1 && heights[c] === 0){
+    //                 heights[c] = props.HEIGHT - r
+    //             }
+    //         }
+    //     }
+    //     return heights
+    // }
     // ****************** Check each row for completion ******************
     function numCompleteRows(squares){
         let numComplete = 0
@@ -74,14 +74,14 @@ export default function Agent(props) {
     
     function run(){
         //State
-        const state = [props.block?.type].concat(getHeights(props.squares))
+        // const state = [props.block?.type].concat(getHeights(props.squares))
         states.push(state)
         //Action
         const prediction = tf.argMax(tf.tensor(onlineModel.predictModel([state])[0]), 0).arraySync()
         //Action
         let action = prediction
-        props.block.orientation = parseInt(action / props.WIDTH)
-        props.block.x = parseInt(action % props.WIDTH)
+        // props.block.orientation = parseInt(action / props.WIDTH)
+        // props.block.x = parseInt(action % props.WIDTH)
         actions.push(action)
         //Reward
         let reward = 0

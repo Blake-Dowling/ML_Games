@@ -11,20 +11,20 @@ import { Engine } from './Engine/Engine'
 // function App(){
 //   return (
 //     <div className="App">
-//       <div className="header">
-//         <nav className="nav">
-//           <ul>
-//             <li><Link to="/">Home</Link></li>
-//             <li><Link to="/jump">Jump</Link></li>
-//             <li><Link to="/tetris">Tetris</Link></li>
-//           </ul>
-//         </nav>  
-//       </div>
-//       <Routes>
-//         <Route path='/' element={<Home/>}></Route>
-//         <Route path='/jump' element={<Jump/>}></Route>
-//         <Route path='/tetris' element={<Tetris/>}></Route>
-//       </Routes>
+      // <div className="header">
+      //   <nav className="nav">
+      //     <ul>
+      //       <li><Link to="/">Home</Link></li>
+      //       <li><Link to="/jump">Jump</Link></li>
+      //       <li><Link to="/tetris">Tetris</Link></li>
+      //     </ul>
+      //   </nav>  
+      // </div>
+      // <Routes>
+      //   <Route path='/' element={<Home/>}></Route>
+      //   <Route path='/jump' element={<Jump/>}></Route>
+      //   <Route path='/tetris' element={<Tetris/>}></Route>
+      // </Routes>
 
 //     </div>
 //   )
