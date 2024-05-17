@@ -11,7 +11,7 @@ export function View(props) {
 
     useEffect(() => {
         props.setBoard(new Board(props.WIDTH, props.HEIGHT, []))
-    }, [])
+    }, [props.WIDTH, props.HEIGHT])
 
     function cellColor(rowIndex, columnIndex){
         const cellVal = board?.board[rowIndex][columnIndex]

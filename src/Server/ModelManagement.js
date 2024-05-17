@@ -13,14 +13,17 @@ export class tfModel{
         //Input Layer
         const inputLayer = tf.input({shape: [inputShape]})
         //Hidden Layers
-        const dense2 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
+
         const dense1 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
+        const dense2 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
+        const dense3 = tf.layers.dense({units: 32, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
         //Output Layer
         const outputLayer = tf.layers.dense({units: outputShape, activation: 'linear', name: 'output'})
 
         //Apply Layers
         let x = dense1.apply(inputLayer)
         x = dense2.apply(x)
+        x = dense3.apply(x)
         const output = outputLayer.apply(x)
 
         //Create and compile model

@@ -7,12 +7,10 @@ export function Timer(props){
   };
 
   useEffect(() => {
-    if(speed > 0 && props.ticks < 512){
-      const timerId = setInterval(handleTick, speed); 
-      return () => {
-        clearInterval(timerId);
-      };
-    }
+    const timerId = setInterval(handleTick, speed); 
+    return () => {
+      clearInterval(timerId);
+    };
   }, [speed]); 
 
   return (

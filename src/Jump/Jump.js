@@ -20,6 +20,7 @@ export function Jump(props) {
     }
 
     useEffect(() => {
+      props.setModelParams([WIDTH+1, HEIGHT-1, 'jump-model'])
       props.setWIDTH(WIDTH)
       props.setHEIGHT(HEIGHT)
       initGame()
@@ -69,18 +70,25 @@ export function Jump(props) {
       return minRockDist
     }
 
-    function run(){
+    function getGroundArray(board){
+      const groundArray = board[board.length-1]
+      for(let i=0; i<groundArray?.length; i++){
+        groundArray[i] = groundArray[i] == 2
+      }
+      return groundArray
+    }
 
+    function run(){
       //Action
       player = movePlayer(player, props.board, props.action)
       rocks = moveRocks(rocks)
       //State
-      const rockDist = calcRockDist(player, rocks, WIDTH)
-      const inAir = checkInAir(player, HEIGHT)
-      props.setState([rockDist, inAir])
 
-      //Trigger state update, agent render
-      updatePieces([player, ...rocks])
+      const inAir = checkInAir(player, HEIGHT)
+      const groundArray = getGroundArray(props.board.board)
+      props.setState([inAir, ...groundArray])
+
+
       //Reward, done
       if(checkCollision(player, rocks)){
         props.setReward(-20)
@@ -96,19 +104,23 @@ export function Jump(props) {
         props.setDone(false)
       }
 
-      if((props.ticks % 4 < 2) * (Math.floor(Math.random()*2))){
+      if((props.ticks % 5 < 4) * (Math.floor(Math.random()*2))){
         rocks.push(new Piece(WIDTH-1, HEIGHT-1, 2))
       }
       props.setScore(prevScore => {
         return prevScore + 1
       })
+      //Trigger state update, agent render
+      updatePieces([player, ...rocks])
 
     }
 
     //Event loop
     useEffect(() => {
+      if(props.board){
+        run()
+      }
 
-      run()
 
     }, [props.ticks])
 

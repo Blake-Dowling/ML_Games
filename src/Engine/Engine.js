@@ -14,21 +14,14 @@ export function Engine(props) {
 
     const [score, setScore] = useState(0)
     const [ticks, setTicks] = useState(0)
-    const [WIDTH, setWIDTH] = useState(8)
-    const [HEIGHT, setHEIGHT] = useState(5)
+    const [WIDTH, setWIDTH] = useState(0)
+    const [HEIGHT, setHEIGHT] = useState(0)
     const [board, setBoard] = useState(null)
     const [state, setState] = useState([0, 0])
     const [action, setAction] = useState(0)
     const [reward, setReward] = useState(0)
     const [done, setDone] = useState(false)
-
-
-
-
-    // useEffect(() => {
-    //     console.log("state: ", state)
-    // }, [state])
-
+    const [modelParams, setModelParams] = useState(null)
 
     return (
       <div>
@@ -49,6 +42,7 @@ export function Engine(props) {
             action={action}
             setReward={setReward}
             setDone={setDone}
+            setModelParams={setModelParams}
         />
         <View
           ticks={ticks}
@@ -65,6 +59,7 @@ export function Engine(props) {
           reward={reward}
           done={done}
           board={board}
+          modelParams={modelParams}
         />
       </div>
     )
