@@ -88,7 +88,7 @@ export function Tetris(props) {
         for(let i=workingBoard.board.length-1; i>=0; i--){
             let complete = true
             for(let j=0; j<workingBoard.board[i].length; j++){
-                if(workingBoard.board[i][j].val !== 1){
+                if(workingBoard.board[i][j] !== 1){
                     complete = false
                     break
                 }
@@ -96,6 +96,8 @@ export function Tetris(props) {
             if(complete){
                 numCompleteRows ++
                 workingBoard.board.splice(i, 1)
+                const emptyRow = new Array(WIDTH).fill(0)
+                workingBoard.board = [emptyRow, ...workingBoard.board]
             }
         }
         restingPixels = []
@@ -118,6 +120,7 @@ export function Tetris(props) {
         return 0
     }
     function run(){
+   
         //Action
 
         player = movePlayer(player, props.board, props.action)
@@ -146,7 +149,7 @@ export function Tetris(props) {
     //Event loop
     useEffect(() => {
         if(player && props.board){
-          run()
+            run()
         }
       }, [props.ticks])
     // ****************** Arrow key event handler ******************
@@ -173,7 +176,12 @@ export function Tetris(props) {
   return (
     // **************************** Render Screen **************************** 
     <div className="main">
-
+          {/* <button
+            className="ai-button"
+            onClick={() => props.setGame(0)}
+          >
+            Jump Game
+        </button> */}
 
     </div>
   )

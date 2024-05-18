@@ -20,7 +20,7 @@ export function Jump(props) {
     }
 
     useEffect(() => {
-      props.setModelParams([WIDTH+1, HEIGHT-1, 'jump-model'])
+      props.setModelParams([WIDTH+1, HEIGHT-1, 'jump-model-2'])
       props.setWIDTH(WIDTH)
       props.setHEIGHT(HEIGHT)
       initGame()
@@ -123,12 +123,12 @@ export function Jump(props) {
 
     return (
       <div>
-          <button
+          {/* <button
             className="ai-button"
             onClick={() => props.setGame(1)}
           >
             Tetris
-        </button>
+        </button> */}
       </div>
     )
   }

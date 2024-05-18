@@ -6,6 +6,8 @@ export class tfModel{
         this.outputShape = outputShape
         this.name = name
         this.model = this.initModel(inputShape, outputShape)
+        this.trainingHistory = []
+        this.scoreHistory = []
     }
 
     initModel(inputShape, outputShape){
@@ -36,8 +38,10 @@ export class tfModel{
     async loadModel(){
         try{
             let loadedModel = await tf.loadLayersModel(`localstorage://${this.name}`)
+            this.trainingHistory = JSON.parse(localStorage.getItem(`${this.name}/trainingHistory`))
+            this.scoreHistory = JSON.parse(localStorage.getItem(`${this.name}/scoreHistory`))
             loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
-            return loadedModel
+            this.model = loadedModel
         } catch(error){
             console.error(error)
         }
@@ -45,13 +49,18 @@ export class tfModel{
     async saveModel(){
         try{
             this.model.save(`localstorage://${this.name}`)
+            localStorage.setItem(`${this.name}/trainingHistory`, JSON.stringify(this.trainingHistory))
+            localStorage.setItem(`${this.name}/scoreHistory`, JSON.stringify(this.scoreHistory))
         } catch(error){
             console.error(error)
         }
     }
     resetModel(){
-        localStorage.removeItem('my-model')
+        localStorage.removeItem(`${this.name}`)
+        localStorage.removeItem(`${this.name}/trainingHistory`)
+        localStorage.removeItem(`${this.name}/scoreHistory`)
         this.model = this.initModel(this.inputShape, this.outputShape)
+        this.trainingHistory = []
       }
     // ob<array> -> tensor
     async trainModel(input){
@@ -78,6 +87,7 @@ export class tfModel{
         let history = await this.model.fit(tfInput, targetOutput, {epochs: 3, shuffle: true})
         const loss = history.history.loss
         const accuracy = history.history.acc
+        this.trainingHistory = this.trainingHistory ? this.trainingHistory.concat(loss) : loss
         console.log("loss: ", loss[loss.length-1], "accuracy: ", accuracy[accuracy.length-1])
         return history
     }

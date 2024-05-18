@@ -7,18 +7,19 @@ export function Timer(props){
   };
 
   useEffect(() => {
-    const timerId = setInterval(handleTick, speed); 
-    return () => {
-      clearInterval(timerId);
-    };
+    if(speed > 0){
+      const timerId = setInterval(handleTick, speed);
+      return () => {
+        clearInterval(timerId);
+      };
+    }
   }, [speed]); 
 
   return (
     <div>
-      <p>Ticks: {props.ticks}</p>
       <input
         type="range"
-        onChange={e=> {const speeds = [0, 5000, 1000, 100]; setSpeed(speeds[e.target.value])}}
+        onChange={e=> {const speeds = [0, 5000, 500, 100]; setSpeed(speeds[e.target.value])}}
         min="0"
         max="3"
         step="1"

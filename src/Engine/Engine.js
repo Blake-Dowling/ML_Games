@@ -5,24 +5,26 @@ import { Jump } from '../Jump/Jump'
 import { Tetris } from '../Tetris/Tetris'
 
 import { Agent } from './Agent'
+import { TrainingChart } from './Chart'
 
 
 import KeyPress from './KeyPress'
 
 
 export function Engine(props) {
-    const [game, setGame] = useState(1)
+    const game = props.game
     const [score, setScore] = useState(0)
     const [ticks, setTicks] = useState(0)
     const [WIDTH, setWIDTH] = useState(0)
     const [HEIGHT, setHEIGHT] = useState(0)
     const [board, setBoard] = useState(null)
-    const [state, setState] = useState([0, 0])
+    const [state, setState] = useState(null)
     const [action, setAction] = useState(0)
     const [reward, setReward] = useState(0)
     const [done, setDone] = useState(false)
     const [modelParams, setModelParams] = useState(null)
-    
+    const [onlineModel, setOnlineModel] = useState(null)
+
     return (
       <div>
         Score: {score}
@@ -30,7 +32,6 @@ export function Engine(props) {
           ticks={ticks}
           setTicks={setTicks}
         />
-        
         {game===0 && <Jump
             ticks={ticks}
             score={score}
@@ -44,7 +45,7 @@ export function Engine(props) {
             setReward={setReward}
             setDone={setDone}
             setModelParams={setModelParams}
-            setGame={setGame}
+            // setGame={setGame}
         />}
         {game===1 && <Tetris
             ticks={ticks}
@@ -59,7 +60,7 @@ export function Engine(props) {
             setReward={setReward}
             setDone={setDone}
             setModelParams={setModelParams}
-            setGame={setGame}
+            // setGame={setGame}
         />}
         <View
           ticks={ticks}
@@ -70,6 +71,7 @@ export function Engine(props) {
         />
         <KeyPress setAction={setAction}/>
         <Agent
+          score={score}
           state={state}
           action={action}
           setAction={setAction}
@@ -77,6 +79,11 @@ export function Engine(props) {
           done={done}
           board={board}
           modelParams={modelParams}
+          onlineModel={onlineModel}
+          setOnlineModel={setOnlineModel}
+        />
+        <TrainingChart
+            onlineModel={onlineModel}
         />
       </div>
     )
