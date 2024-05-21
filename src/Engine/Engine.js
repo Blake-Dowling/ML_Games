@@ -14,6 +14,7 @@ import KeyPress from './KeyPress'
 export function Engine(props) {
     const game = props.game
     const [score, setScore] = useState(0)
+    const [highScore, setHighScore] = useState(0)
     const [ticks, setTicks] = useState(0)
     const [WIDTH, setWIDTH] = useState(0)
     const [HEIGHT, setHEIGHT] = useState(0)
@@ -71,6 +72,8 @@ export function Engine(props) {
         <KeyPress setAction={setAction}/>
         <Agent
           score={score}
+          highScore={highScore}
+          setHighScore={setHighScore}
           state={state}
           action={action}
           setAction={setAction}

@@ -51,6 +51,9 @@ export class tfModel{
             this.model.save(`localstorage://${this.name}`)
             localStorage.setItem(`${this.name}/trainingHistory`, JSON.stringify(this.trainingHistory))
             localStorage.setItem(`${this.name}/scoreHistory`, JSON.stringify(this.scoreHistory))
+            return new Promise((resolve, reject) => {
+                resolve(true)
+            })
         } catch(error){
             console.error(error)
         }
@@ -65,7 +68,7 @@ export class tfModel{
     // ob<array> -> tensor
     async trainModel(input){
         //existing q values to fill in output tensor aside from newly trained actions
-        const onlineOutput = this.predictModel(input.states)
+        const onlineOutput = await this.predictModel(input.states)
         //Current highest q value for each (next) state
         const maxOnlineQValues = tf.max(onlineOutput, 1).arraySync()
         console.log(maxOnlineQValues)
@@ -87,15 +90,17 @@ export class tfModel{
         let history = await this.model.fit(tfInput, targetOutput, {epochs: 1, shuffle: true})
         const loss = history.history.loss
         const accuracy = history.history.acc
-        console.debug("Before (inner): ", this.trainingHistory)
         this.trainingHistory = this.trainingHistory ? this.trainingHistory.concat(loss) : loss
-        console.debug("After (inner): ", this.trainingHistory)
         console.log("loss: ", loss[loss.length-1], "accuracy: ", accuracy[accuracy.length-1])
-        return history
+        return new Promise((resolve, reject) => {
+            resolve(history)
+        })
     }
     //array -> tensor -> array
-    predictModel(input){
+    async predictModel(input){
         let output = this.model.predict(tf.tensor(input)).arraySync()
-        return output
+        return new Promise((resolve, reject) => {
+            resolve(output)
+        })
     }
 }
