@@ -23,6 +23,8 @@ export function Engine(props) {
     const [action, setAction] = useState(0)
     const [reward, setReward] = useState(0)
     const [done, setDone] = useState(false)
+    const [stateBit, setStateBit] = useState(false)
+    const [actionBit, setActionBit] = useState(false)
     const [modelParams, setModelParams] = useState(null)
     const [onlineModel, setOnlineModel] = useState(null)
     const [display, setDisplay] = useState(true)
@@ -49,6 +51,9 @@ export function Engine(props) {
             setBoard={setBoard}
             setState={setState}
             action={action}
+            stateBit={stateBit}
+            setStateBit={setStateBit}
+            actionBit={actionBit}
             setReward={setReward}
             setDone={setDone}
             setModelParams={setModelParams}
@@ -64,6 +69,9 @@ export function Engine(props) {
             setBoard={setBoard}
             setState={setState}
             action={action}
+            stateBit={stateBit}
+            setStateBit={setStateBit}
+            actionBit={actionBit}
             setReward={setReward}
             setDone={setDone}
             setModelParams={setModelParams}
@@ -71,12 +79,16 @@ export function Engine(props) {
         />}
         <KeyPress setAction={setAction}/>
         <Agent
+          ticks={ticks}
           score={score}
           highScore={highScore}
           setHighScore={setHighScore}
           state={state}
           action={action}
           setAction={setAction}
+          stateBit={stateBit}
+          actionBit={actionBit}
+          setActionBit={setActionBit}
           reward={reward}
           done={done}
           board={board}

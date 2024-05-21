@@ -26,17 +26,13 @@ export function Jump(props) {
       initGame()
     }, [])
 
-    function updateBoard(pieces){
-      props.setBoard(prevBoard => {
-        if(prevBoard){
-          return new Board(prevBoard?.width, prevBoard?.height, pieces)
-        }
-      })
-    }
 
     function movePlayer(player, board, action){
       if(board?.grounded(player)){ //Jump
+        if(action){
           player.y -= action
+        }
+
       }
       else{ //Gravity
           player.y += 1
@@ -70,23 +66,21 @@ export function Jump(props) {
     }
 
     function getGroundArray(board){
-      const groundArray = board[board.length-1]
+      const groundArray = JSON.parse(JSON.stringify(board[board.length-1])) //Copy bottom row
       for(let i=0; i<groundArray?.length; i++){
         groundArray[i] = groundArray[i] == 2
       }
       return groundArray
     }
 
-    function run(){
+    //Creates new board by moving based on current prediction.
+    //Updates state and board to trigger new prediction by Agent.
+    function getState(){
       //Action
+
       player = movePlayer(player, props.board, props.action)
       rocks = moveRocks(rocks)
       //State
-
-      const inAir = checkInAir(player, HEIGHT)
-      const groundArray = getGroundArray(props.board.board)
-      props.setState([inAir, ...groundArray])
-
 
       //Reward, done
       if(checkCollision(player, rocks)){
@@ -94,7 +88,7 @@ export function Jump(props) {
         props.setDone(true)
         initGame()
       }
-      else if(props.score % 20 == 0){
+      else if(props.score > 0 && props.score % 20 == 0){
         props.setReward(20)
         props.setDone(true)
       }
@@ -109,17 +103,28 @@ export function Jump(props) {
       props.setScore(prevScore => {
         return prevScore + 1
       })
-      //Trigger state update, agent render
-      updateBoard([player, ...rocks])
 
+      const newBoard = new Board(props.board?.width, props.board?.height, [player, ...rocks])
+
+      const inAir = checkInAir(player, HEIGHT)
+
+      const groundArray = getGroundArray(newBoard.board)
+
+      props.setBoard(newBoard)
+      props.setState([inAir, ...groundArray]) //Trigger agent render
     }
 
     //Event loop
     useEffect(() => {
       if(props.board){
-        run()
+        getState()
       }
     }, [props.ticks])
+    useEffect(() => {
+      if(props.board){
+        getState()
+      }
+    }, [])
 
     return (
       <div>

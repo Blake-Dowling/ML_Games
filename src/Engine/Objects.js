@@ -43,7 +43,7 @@ export class Board{
     constructor(width, height, pieces){
         this.width = width
         this.height = height
-        this.pieces = pieces
+        this.pieces = JSON.parse(JSON.stringify(pieces))
         this.draw()
     }
     refresh(){

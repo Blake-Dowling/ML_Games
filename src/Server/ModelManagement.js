@@ -64,6 +64,7 @@ export class tfModel{
         localStorage.removeItem(`${this.name}/scoreHistory`)
         this.model = this.initModel(this.inputShape, this.outputShape)
         this.trainingHistory = []
+        this.scoreHistory = []
       }
     // ob<array> -> tensor
     async trainModel(input){

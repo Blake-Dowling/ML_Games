@@ -96,7 +96,7 @@ export function TrainingChart(props) {
         // }
       };
   return (
-    <div>Chart
+    <div>
         <Line
             data={data} 
             options={options}

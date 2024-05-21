@@ -3,7 +3,7 @@ import React, {useState, useEffect} from 'react'
 import { tfModel } from '../Server/ModelManagement'
 const tf = require('@tensorflow/tfjs')
 
-const BATCH_SIZE = 32
+const BATCH_SIZE = 256
 
 let states = []
 let actions = []
@@ -33,6 +33,12 @@ export function Agent(props) {
     prediction = tf.argMax(tf.tensor(prediction[0]), 0).arraySync()
     props.setAction(prediction)
     actions.push(prediction)
+    props.setActionBit(prevActionBit => {return !prevActionBit})
+    if(states.length >= BATCH_SIZE+1){
+      trainModel()
+    }
+
+    // console.debug(states[states.length-1], actions[actions.length-1], rewards[rewards.length-1], done[done.length-1])
   }
   async function trainModel(){
         const onlineModel = new tfModel(props.onlineModel.inputShape, props.onlineModel.outputShape, props.onlineModel.name)
@@ -49,8 +55,6 @@ export function Agent(props) {
         actions = []
         rewards = []
         done = []
-        const history = await onlineModel?.trainModel(input)
-        // console.log(props.score)
         if(onlineModel?.scoreHistory){
           onlineModel?.scoreHistory?.push(props.highScore)
         }
@@ -58,15 +62,16 @@ export function Agent(props) {
           onlineModel.scoreHistory = [props.highScore]
         }
         props.setHighScore(0)
+        const history = await onlineModel?.trainModel(input)
 
-        // console.log(onlineModel)
-        // props.setTrainingHistory(props.onlineModel?.trainingHistory)
         onlineModel?.saveModel()
 
         props.setOnlineModel(onlineModel)
 
   }
   useEffect(()=>{
+
+    // console.debug("board: ", props.board.board)
     if(props.onlineModel && props.state){
       //State
       states.push(props.state)
@@ -74,10 +79,7 @@ export function Agent(props) {
       done.push(props.done)
       //Action
       getPrediction()
-      if(states.length >= BATCH_SIZE+1){
-        trainModel()
-      }
-      // console.log(states[states.length-1], actions[actions.length-1], rewards[rewards.length-1], done[done.length-1])
+
       //Training
     }
   }, [props.state])
