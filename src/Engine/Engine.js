@@ -24,6 +24,7 @@ export function Engine(props) {
     const [done, setDone] = useState(false)
     const [modelParams, setModelParams] = useState(null)
     const [onlineModel, setOnlineModel] = useState(null)
+    const [display, setDisplay] = useState(true)
 
     return (
       <div>
@@ -32,6 +33,11 @@ export function Engine(props) {
           ticks={ticks}
           setTicks={setTicks}
         />
+        <button
+            onClick={() => {setDisplay(prevDisplay => {return !prevDisplay})}}
+        >
+            Display
+        </button>
         {game===0 && <Jump
             ticks={ticks}
             score={score}
@@ -62,13 +68,6 @@ export function Engine(props) {
             setModelParams={setModelParams}
             // setGame={setGame}
         />}
-        <View
-          ticks={ticks}
-          WIDTH={WIDTH}
-          HEIGHT={HEIGHT}
-          board={board}
-          setBoard={setBoard}
-        />
         <KeyPress setAction={setAction}/>
         <Agent
           score={score}
@@ -82,9 +81,20 @@ export function Engine(props) {
           onlineModel={onlineModel}
           setOnlineModel={setOnlineModel}
         />
-        <TrainingChart
-            onlineModel={onlineModel}
-        />
+        {display &&
+            <div>
+                <View
+                ticks={ticks}
+                WIDTH={WIDTH}
+                HEIGHT={HEIGHT}
+                board={board}
+                setBoard={setBoard}
+                />
+                <TrainingChart
+                    onlineModel={onlineModel}
+                />
+            </div>
+        }
       </div>
     )
   }

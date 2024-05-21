@@ -84,10 +84,12 @@ export class tfModel{
         const tfInput = tf.tensor(input.states)
         const targetOutput = {'output': tf.tensor(onlineOutput)}
 
-        let history = await this.model.fit(tfInput, targetOutput, {epochs: 3, shuffle: true})
+        let history = await this.model.fit(tfInput, targetOutput, {epochs: 1, shuffle: true})
         const loss = history.history.loss
         const accuracy = history.history.acc
+        console.debug("Before (inner): ", this.trainingHistory)
         this.trainingHistory = this.trainingHistory ? this.trainingHistory.concat(loss) : loss
+        console.debug("After (inner): ", this.trainingHistory)
         console.log("loss: ", loss[loss.length-1], "accuracy: ", accuracy[accuracy.length-1])
         return history
     }

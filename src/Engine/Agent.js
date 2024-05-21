@@ -16,9 +16,9 @@ export function Agent(props) {
     const outputSize = params[1]
     const name = params[2]
     let onlineModel = new tfModel(inputSize, outputSize, name)
-    props.setOnlineModel(onlineModel)
+    props.setOnlineModel(() => {return onlineModel})
     onlineModel.loadModel()
-    props.setOnlineModel(onlineModel)
+    props.setOnlineModel(() => {return onlineModel})
   }
   useEffect(()=>{
     if(props.modelParams){
@@ -27,40 +27,47 @@ export function Agent(props) {
   }, [props.modelParams, props.game])
   function run(){
 
-  }
-  useEffect(()=>{
-    if(props.onlineModel && props.state){
-      const onlineModel = props.onlineModel
-      //State
-      const input = props.state
-      states.push(input)
-      rewards.push(props.reward)
-      done.push(props.done)
-      //Action
-      const prediction = tf.argMax(tf.tensor(onlineModel?.predictModel([input])[0]), 0).arraySync()
-      props.setAction(prediction)
-      actions.push(prediction)
-      
-      console.log(states[states.length-1], actions[actions.length-1], rewards[rewards.length-1], done[done.length-1])
-      //Training
       if(states.length >= BATCH_SIZE+1){
+        const onlineModel = props.onlineModel
+        console.debug("Before (outer): ", onlineModel?.trainingHistory)
         const history = onlineModel?.trainModel({
           'states': states,
           'actions': actions,
           'rewards': rewards,
           'done': done
         })
-        onlineModel?.scoreHistory?.push(props.score)
-        onlineModel?.scoreHistory?.push(props.score)
-        onlineModel?.scoreHistory?.push(props.score)
+        // console.log(props.score)
+        if(onlineModel?.scoreHistory){
+          onlineModel?.scoreHistory?.push(props.score)
+        }
+        else{
+          onlineModel.scoreHistory = [props.score]
+        }
+
+        // console.log(onlineModel)
         // props.setTrainingHistory(props.onlineModel?.trainingHistory)
         onlineModel?.saveModel()
+        console.debug("After (outer): ", onlineModel?.trainingHistory)
         states = []
         actions = []
         rewards = []
         done = []
-        props.setOnlineModel(onlineModel)
+        props.setOnlineModel(prevOnlineModel => { return onlineModel})
       }
+  }
+  useEffect(()=>{
+    if(props.onlineModel && props.state){
+      //State
+      states.push(props.state)
+      rewards.push(props.reward)
+      done.push(props.done)
+      //Action
+      const prediction = tf.argMax(tf.tensor(props.onlineModel?.predictModel([props.state])[0]), 0).arraySync()
+      props.setAction(prediction)
+      actions.push(prediction)
+      run()
+      // console.log(states[states.length-1], actions[actions.length-1], rewards[rewards.length-1], done[done.length-1])
+      //Training
     }
   }, [props.state])
 

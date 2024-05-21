@@ -20,7 +20,7 @@ export function Tetris(props) {
         props.setScore(0)
       }
     useEffect(() => {
-        props.setModelParams([WIDTH+1, 4*WIDTH, 'tetris-model'])
+        props.setModelParams([WIDTH+1, 4*WIDTH, 'tetris-model-2'])
         props.setWIDTH(WIDTH)
         props.setHEIGHT(HEIGHT)
         initGame()
@@ -140,6 +140,7 @@ export function Tetris(props) {
         const fullColumn = checkFullColumn()
         let reward = 0
         reward += 10 * numCompleteRows
+        props.setScore(prevScore=>{return prevScore + (10 * numCompleteRows)})
         reward -= 20 * fullColumn
         props.setReward(reward)
         props.setDone(reward!==0)
