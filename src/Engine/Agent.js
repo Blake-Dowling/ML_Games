@@ -27,7 +27,7 @@ export function Agent(props) {
   }, [props.modelParams, props.game])
   useEffect(() => {
     props.setHighScore(Math.max(props.score, props.highScore))
-  }, [props.score])
+  }, [props.ticks])
   async function getPrediction(){
     let prediction = await props.onlineModel?.predictModel([props.state])
     prediction = tf.argMax(tf.tensor(prediction[0]), 0).arraySync()
