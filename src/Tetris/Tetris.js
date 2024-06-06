@@ -49,11 +49,7 @@ export function Tetris(props) {
         player.x = parseInt(action % WIDTH)
         return new TetrisBlock(player.x, player.y, player.orientation, player.type)
     }
-    function updateBoard(){
-        props.setBoard(prevBoard => {
-            return new Board(prevBoard?.width, prevBoard?.height, [player, ...restingPixels])
-        })
-      }
+
     // ****************** Get board column heights ******************
     function getHeights(board){
         let heights = []
@@ -119,40 +115,41 @@ export function Tetris(props) {
         }
         return 0
     }
-    function run(){
-   
+    function getState(){
         //Action
-
         player = movePlayer(player, props.board, props.action)
         player = gravityPlayer(player, props.board)
-
-        //State
-        const state = [player.type].concat(getHeights(props.board.board))
-        props.setState(state)
-        // //Reward
+        // Reward
         workingBoard = new Board(props.board.width, props.board.height, [player, ...restingPixels])
-
         checkBlockStop()
-
         workingBoard = new Board(props.board.width, props.board.height, restingPixels)
         const numCompleteRows = checkCompleteRows()
-
         const fullColumn = checkFullColumn()
+        workingBoard = new Board(props.board.width, props.board.height, [player, ...restingPixels])
         let reward = 0
         reward += 10 * numCompleteRows
         props.setScore(prevScore=>{return prevScore + (10 * numCompleteRows)})
         reward -= 20 * fullColumn
         props.setReward(reward)
+        //Done
         props.setDone(reward!==0)
         //Trigger state update, agent render
-        updateBoard()
+        //State
+        const state = [player.type].concat(getHeights(workingBoard.board))
+        props.setState(state)
+        props.setBoard(workingBoard)
     }
     //Event loop
     useEffect(() => {
         if(player && props.board){
-            run()
+            getState()
         }
       }, [props.ticks])
+    useEffect(() => {
+        if(player && props.board){
+            getState()
+        }
+      }, [])
     // ****************** Arrow key event handler ******************
     // function keyPressCallback(key){
     //     switch(key){

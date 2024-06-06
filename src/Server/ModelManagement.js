@@ -58,6 +58,18 @@ export class tfModel{
             console.error(error)
         }
     }
+    async backupModel(){
+        try{
+            this.model.save(`localstorage://${this.name}-backup`)
+            localStorage.setItem(`${this.name}/trainingHistory-backup`, JSON.stringify(this.trainingHistory))
+            localStorage.setItem(`${this.name}/scoreHistory-backup`, JSON.stringify(this.scoreHistory))
+            return new Promise((resolve, reject) => {
+                resolve(true)
+            })
+        } catch(error){
+            console.error(error)
+        }
+    }
     resetModel(){
         localStorage.removeItem(`${this.name}`)
         localStorage.removeItem(`${this.name}/trainingHistory`)

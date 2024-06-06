@@ -3,7 +3,7 @@ import React, {useState, useEffect} from 'react'
 import { tfModel } from '../Server/ModelManagement'
 const tf = require('@tensorflow/tfjs')
 
-const BATCH_SIZE = 256
+const BATCH_SIZE = 32
 
 let states = []
 let actions = []
@@ -65,6 +65,9 @@ export function Agent(props) {
         const history = await onlineModel?.trainModel(input)
 
         onlineModel?.saveModel()
+        if(onlineModel.scoreHistory.length !== 0 && (onlineModel.scoreHistory.length*BATCH_SIZE) % 50000 < BATCH_SIZE){
+          onlineModel.backupModel()
+        }
 
         props.setOnlineModel(onlineModel)
 
