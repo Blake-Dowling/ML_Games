@@ -27,7 +27,8 @@ export function Engine(props) {
     const [actionBit, setActionBit] = useState(false)
     const [modelParams, setModelParams] = useState(null)
     const [onlineModel, setOnlineModel] = useState(null)
-    const [display, setDisplay] = useState(true)
+    const [displayView, setDisplayView] = useState(true)
+    const [displayChart, setDisplayChart] = useState(true)
 
     return (
       <div>
@@ -37,9 +38,14 @@ export function Engine(props) {
           setTicks={setTicks}
         />
         <button
-            onClick={() => {setDisplay(prevDisplay => {return !prevDisplay})}}
+            onClick={() => {setDisplayView(prevDisplayView => {return !prevDisplayView})}}
         >
-            Display
+            Display View
+        </button>
+        <button
+            onClick={() => {setDisplayChart(prevDisplayChart => {return !prevDisplayChart})}}
+        >
+            Display Chart
         </button>
         {game===0 && <Jump
             ticks={ticks}
@@ -96,8 +102,9 @@ export function Engine(props) {
           onlineModel={onlineModel}
           setOnlineModel={setOnlineModel}
         />
-        {display &&
-            <div>
+
+          <div>
+            {displayView &&
                 <View
                 ticks={ticks}
                 WIDTH={WIDTH}
@@ -105,11 +112,14 @@ export function Engine(props) {
                 board={board}
                 setBoard={setBoard}
                 />
+            }
+            {displayChart &&
                 <TrainingChart
                     onlineModel={onlineModel}
                 />
-            </div>
-        }
+            }
+          </div>
+
       </div>
     )
   }

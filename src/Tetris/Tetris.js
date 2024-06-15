@@ -20,7 +20,7 @@ export function Tetris(props) {
         props.setScore(0)
       }
     useEffect(() => {
-        props.setModelParams([WIDTH+1, 4*WIDTH, 'tetris-model-2'])
+        props.setModelParams([WIDTH+3, 4*WIDTH, 'tetris-model-2'])
         props.setWIDTH(WIDTH)
         props.setHEIGHT(HEIGHT)
         initGame()
@@ -115,6 +115,28 @@ export function Tetris(props) {
         }
         return 0
     }
+    function countHoles(){
+        let numHoles = 0
+        for(let r=0; r<workingBoard.board.length-1; r++){
+            for(let c=0; c<workingBoard.board[r].length; c++){
+                if(workingBoard.board[r][c] > 0){
+                    let depth = 1
+                    while(r+depth < workingBoard.board.length && workingBoard.board[r+depth][c] === 0){
+                        numHoles ++
+                        depth ++
+                    }
+                }
+            }
+        }
+        return numHoles
+    }
+    function getBumpiness(heights){
+        let bumpiness = 0
+        for(let c=1; c<heights.length; c++){
+            bumpiness = bumpiness + Math.abs(heights[c] - heights[c-1])
+        }
+        return bumpiness
+    }
     function getState(){
         //Action
         player = movePlayer(player, props.board, props.action)
@@ -125,6 +147,9 @@ export function Tetris(props) {
         workingBoard = new Board(props.board.width, props.board.height, restingPixels)
         const numCompleteRows = checkCompleteRows()
         const fullColumn = checkFullColumn()
+        const numHoles = countHoles()
+        const heights = getHeights(workingBoard.board)
+        const bumpiness = getBumpiness(heights)
         workingBoard = new Board(props.board.width, props.board.height, [player, ...restingPixels])
         let reward = 0
         reward += 10 * numCompleteRows
@@ -135,7 +160,7 @@ export function Tetris(props) {
         props.setDone(reward!==0)
         //Trigger state update, agent render
         //State
-        const state = [player.type].concat(getHeights(workingBoard.board))
+        const state = [player.type].concat(heights).concat(numHoles).concat(bumpiness)
         props.setState(state)
         props.setBoard(workingBoard)
     }

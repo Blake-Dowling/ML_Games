@@ -19,9 +19,9 @@ export function Timer(props){
     <div>{props.ticks}
       <input
         type="range"
-        onChange={e=> {const speeds = [0, 5000, 500, 200, 100, 50]; setSpeed(speeds[e.target.value])}}
+        onChange={e=> {const speeds = [0, 5000, 500, 200, 100, 50, 25]; setSpeed(speeds[e.target.value])}}
         min="0"
-        max="5"
+        max="6"
         step="1"
         >
         </input>
