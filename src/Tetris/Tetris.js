@@ -93,6 +93,7 @@ export function Tetris(props) {
                 workingBoard.board.splice(i, 1)
                 const emptyRow = new Array(WIDTH).fill(0)
                 workingBoard.board = [emptyRow, ...workingBoard.board]
+                i ++
             }
         }
         restingPixels = []

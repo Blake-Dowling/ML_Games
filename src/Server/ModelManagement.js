@@ -5,22 +5,22 @@ export class tfModel{
         this.inputShape = inputShape
         this.outputShape = outputShape
         this.name = name
-        this.model = this.initModel(inputShape, outputShape)
+        this.model = null
         this.trainingHistory = []
         this.scoreHistory = []
     }
 
-    initModel(inputShape, outputShape){
+    initModel(){
         // ****************** X model ******************
         //Input Layer
-        const inputLayer = tf.input({shape: [inputShape]})
+        const inputLayer = tf.input({shape: [this.inputShape]})
         //Hidden Layers
 
         const dense1 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
         const dense2 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
         const dense3 = tf.layers.dense({units: 32, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
         //Output Layer
-        const outputLayer = tf.layers.dense({units: outputShape, activation: 'linear', name: 'output'})
+        const outputLayer = tf.layers.dense({units: this.outputShape, activation: 'linear', name: 'output'})
 
         //Apply Layers
         let x = dense1.apply(inputLayer)

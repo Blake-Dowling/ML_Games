@@ -16,6 +16,7 @@ export function Agent(props) {
     const outputSize = params[1]
     const name = params[2]
     let onlineModel = new tfModel(inputSize, outputSize, name)
+    onlineModel.initModel()
     props.setOnlineModel(onlineModel)
     onlineModel.loadModel()
     props.setOnlineModel(onlineModel)
