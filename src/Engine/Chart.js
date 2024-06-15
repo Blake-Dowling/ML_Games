@@ -83,6 +83,9 @@ export function TrainingChart(props) {
         //   y: {
         //     beginAtZero: true
         //   }
+        animation: {
+            duration: 0
+        },
         scales: {
             A: {
                 beginAtZero: true,

@@ -51,6 +51,7 @@ export function Agent(props) {
           'rewards': rewards,
           'done': done
         }
+        console.debug(input)
         states = []
         actions = []
         rewards = []

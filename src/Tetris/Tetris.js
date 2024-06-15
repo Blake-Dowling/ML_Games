@@ -18,9 +18,9 @@ export function Tetris(props) {
         restingPixels = []
         workingBoard = new Board(WIDTH, HEIGHT, [player])
         props.setScore(0)
-      }
+    }
     useEffect(() => {
-        props.setModelParams([WIDTH+3, 4*WIDTH, 'tetris-model-2'])
+        props.setModelParams([WIDTH+3, 4*WIDTH, 'tetris-model-3'])
         props.setWIDTH(WIDTH)
         props.setHEIGHT(HEIGHT)
         initGame()
@@ -36,8 +36,6 @@ export function Tetris(props) {
             3
             )
     }
-
-
     function gravityPlayer(player, board){
         if(!board?.grounded(player)){
               player.y += 1
@@ -76,8 +74,9 @@ export function Tetris(props) {
             }
             restingPixels = restingPixels.concat(...newPieces)
             player = newBlock()
+            return true
         }
-        workingBoard = new Board(workingBoard.width, workingBoard.height, [player, ...restingPixels])
+        return false
     }
     function checkCompleteRows(){
         let numCompleteRows = 0
@@ -115,13 +114,13 @@ export function Tetris(props) {
         }
         return 0
     }
-    function countHoles(){
+    function countHoles(board){
         let numHoles = 0
-        for(let r=0; r<workingBoard.board.length-1; r++){
-            for(let c=0; c<workingBoard.board[r].length; c++){
-                if(workingBoard.board[r][c] > 0){
+        for(let r=0; r<board.length-1; r++){
+            for(let c=0; c<board[r].length; c++){
+                if(board[r][c] > 0){
                     let depth = 1
-                    while(r+depth < workingBoard.board.length && workingBoard.board[r+depth][c] === 0){
+                    while(r+depth < board.length && board[r+depth][c] === 0){
                         numHoles ++
                         depth ++
                     }
@@ -139,29 +138,43 @@ export function Tetris(props) {
     }
     function getState(){
         //Action
+        //Player movement
         player = movePlayer(player, props.board, props.action)
         player = gravityPlayer(player, props.board)
-        // Reward
+        //Player movement result
         workingBoard = new Board(props.board.width, props.board.height, [player, ...restingPixels])
-        checkBlockStop()
+        const blockStop = checkBlockStop()
+        //New board result
         workingBoard = new Board(props.board.width, props.board.height, restingPixels)
         const numCompleteRows = checkCompleteRows()
         const fullColumn = checkFullColumn()
-        const numHoles = countHoles()
-        const heights = getHeights(workingBoard.board)
-        const bumpiness = getBumpiness(heights)
+        //Remove player from board after init for following calculations
+        workingBoard = new Board(props.board.width, props.board.height, restingPixels)
+        //New state
+        if(blockStop || numCompleteRows || fullColumn){
+            // console.debug("blockStop:", blockStop)
+            // console.debug("numCompleteRows:", numCompleteRows)
+            // console.debug("fullColumn:", fullColumn)
+            const heights = getHeights(workingBoard.board)
+            const numHoles = countHoles(workingBoard.board)
+            // console.debug("heights:", heights)
+            // console.debug("numHoles:", numHoles)
+            const bumpiness = getBumpiness(heights)
+            //Reward
+            let reward = 0
+            reward += 10 * numCompleteRows
+            props.setScore(prevScore=>{return prevScore + (10 * numCompleteRows)})
+            reward -= 20 * fullColumn
+            props.setReward(reward)
+            //Done
+            props.setDone(reward!==0)
+            //Trigger state update, agent render
+            //State
+            const state = [player.type].concat(heights).concat(numHoles).concat(bumpiness)
+            props.setState(state)
+        }
+
         workingBoard = new Board(props.board.width, props.board.height, [player, ...restingPixels])
-        let reward = 0
-        reward += 10 * numCompleteRows
-        props.setScore(prevScore=>{return prevScore + (10 * numCompleteRows)})
-        reward -= 20 * fullColumn
-        props.setReward(reward)
-        //Done
-        props.setDone(reward!==0)
-        //Trigger state update, agent render
-        //State
-        const state = [player.type].concat(heights).concat(numHoles).concat(bumpiness)
-        props.setState(state)
         props.setBoard(workingBoard)
     }
     //Event loop
