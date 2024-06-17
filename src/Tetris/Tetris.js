@@ -20,7 +20,7 @@ export function Tetris(props) {
         props.setScore(0)
     }
     useEffect(() => {
-        props.setModelParams([WIDTH+3, 4*WIDTH, 'tetris-model-3'])
+        props.setModelParams([WIDTH+3, 4*WIDTH, 'tetris-model-4'])
         props.setWIDTH(WIDTH)
         props.setHEIGHT(HEIGHT)
         initGame()
@@ -163,12 +163,12 @@ export function Tetris(props) {
             const bumpiness = getBumpiness(heights)
             //Reward
             let reward = 0
-            reward += 10 * numCompleteRows
+            reward += (WIDTH) * (numCompleteRows**2) + 1
             props.setScore(prevScore=>{return prevScore + (10 * numCompleteRows)})
-            reward -= 20 * fullColumn
+            reward -= 5 * fullColumn
             props.setReward(reward)
             //Done
-            props.setDone(reward!==0)
+            props.setDone(fullColumn!==0)
             //Trigger state update, agent render
             //State
             const state = [player.type].concat(heights).concat(numHoles).concat(bumpiness)
@@ -189,36 +189,10 @@ export function Tetris(props) {
             getState()
         }
       }, [])
-    // ****************** Arrow key event handler ******************
-    // function keyPressCallback(key){
-    //     switch(key){
-    //         case 'ArrowRight':
-    //             moveBlock('x', 1)
-    //             break
-    //         case 'ArrowDown':
-    //             moveBlock('y', 1)
-    //             break
-    //         case 'ArrowLeft':
-    //             moveBlock('x', -1)
-    //             break
-    //         case 'ArrowUp':
-    //             rotateBlock()
-    //             break
-    //     }
-    // }
 
-    // ******************************************************** 
-    // **************************** Render **************************** 
-    // ******************************************************** 
   return (
     // **************************** Render Screen **************************** 
     <div className="main">
-          {/* <button
-            className="ai-button"
-            onClick={() => props.setGame(0)}
-          >
-            Jump Game
-        </button> */}
 
     </div>
   )

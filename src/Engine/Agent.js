@@ -3,7 +3,7 @@ import React, {useState, useEffect} from 'react'
 import { tfModel } from '../Server/ModelManagement'
 const tf = require('@tensorflow/tfjs')
 
-const BATCH_SIZE = 32
+const BATCH_SIZE = 1024
 
 let states = []
 let actions = []

@@ -40,6 +40,8 @@ export class tfModel{
             let loadedModel = await tf.loadLayersModel(`localstorage://${this.name}`)
             this.trainingHistory = JSON.parse(localStorage.getItem(`${this.name}/trainingHistory`))
             this.scoreHistory = JSON.parse(localStorage.getItem(`${this.name}/scoreHistory`))
+            // let loadedModel = await tf.loadGraphModel(`/${this.name}`)//for loading statically once deployed
+
             loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
             this.model = loadedModel
         } catch(error){
