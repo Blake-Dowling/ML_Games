@@ -1,20 +1,13 @@
 import React, {useState, useEffect} from 'react'
 
-import { Board } from './Objects'
 const CELL_SIZE = 40
 
 
 
 export function View(props) {
-    const board = props.board
-    const setBoard = props.setBoard
-
-    useEffect(() => {
-        props.setBoard(new Board(props.WIDTH, props.HEIGHT, []))
-    }, [props.WIDTH, props.HEIGHT])
 
     function cellColor(rowIndex, columnIndex){
-        const cellVal = board?.board[rowIndex][columnIndex]
+        const cellVal = props.board?.board[rowIndex][columnIndex]
         return cellVal == 3 ? 'lime' : cellVal == 2 ? 'red' : cellVal == 1 ? 'black' : 'white'
     }
 

@@ -12,23 +12,47 @@ import KeyPress from './KeyPress'
 
 
 export function Engine(props) {
-    const game = props.game
+    const [game, setGame] = useState(null) //stores state, reward, done
+    const [agent, setAgent] = useState(null)
     const [score, setScore] = useState(0)
     const [highScore, setHighScore] = useState(0)
     const [ticks, setTicks] = useState(0)
-    const [WIDTH, setWIDTH] = useState(0)
-    const [HEIGHT, setHEIGHT] = useState(0)
     const [board, setBoard] = useState(null)
-    const [state, setState] = useState(null)
-    const [action, setAction] = useState(0)
-    const [reward, setReward] = useState(0)
-    const [done, setDone] = useState(false)
-    const [stateBit, setStateBit] = useState(false)
-    const [actionBit, setActionBit] = useState(false)
-    const [modelParams, setModelParams] = useState(null)
-    const [onlineModel, setOnlineModel] = useState(null)
+    const [action, setAction] = useState(0) //required due to asynchronous call
+
     const [displayView, setDisplayView] = useState(true)
     const [displayChart, setDisplayChart] = useState(true)
+
+    async function getAction(game){
+      let action = await agent?.getPrediction(game?.state, game?.reward, game?.done)
+      setAction(action)
+    }
+    useEffect(() => {
+      const newGame = new Tetris()
+      newGame.initGame()
+      setGame(newGame)
+      const agent = new Agent(newGame.modelParams)
+      setAgent(agent)
+      setBoard(newGame.workingBoard)
+  }, []) //Todo: props.game
+
+    //Evevnt loop
+    useEffect(() => {
+
+        let newGame = game?.getState(action)
+        getAction(newGame)
+        let newBoard = newGame?.workingBoard
+        let newScore = newGame?.score
+        let newHighScore = Math.max(newScore, highScore)
+        setHighScore(newHighScore)
+        if(agent?.states.length >= agent?.BATCH_SIZE+1){
+          agent?.trainModel(newHighScore)
+          setHighScore(0)
+        }
+
+        setBoard(newBoard)
+        setScore(newScore)
+    }, [ticks])
 
     return (
       <div>
@@ -47,75 +71,27 @@ export function Engine(props) {
         >
             Display Chart
         </button>
-        {game===0 && <Jump
-            ticks={ticks}
-            score={score}
-            setScore={setScore}
-            setWIDTH={setWIDTH}
-            setHEIGHT={setHEIGHT}
-            board={board}
-            setBoard={setBoard}
-            setState={setState}
-            action={action}
-            stateBit={stateBit}
-            setStateBit={setStateBit}
-            actionBit={actionBit}
-            setReward={setReward}
-            setDone={setDone}
-            setModelParams={setModelParams}
-            // setGame={setGame}
-        />}
-        {game===1 && <Tetris
-            ticks={ticks}
-            score={score}
-            setScore={setScore}
-            setWIDTH={setWIDTH}
-            setHEIGHT={setHEIGHT}
-            board={board}
-            setBoard={setBoard}
-            setState={setState}
-            action={action}
-            stateBit={stateBit}
-            setStateBit={setStateBit}
-            actionBit={actionBit}
-            setReward={setReward}
-            setDone={setDone}
-            setModelParams={setModelParams}
-            // setGame={setGame}
-        />}
-        <KeyPress setAction={setAction}/>
-        <Agent
-          ticks={ticks}
-          score={score}
-          highScore={highScore}
-          setHighScore={setHighScore}
-          state={state}
-          action={action}
-          setAction={setAction}
-          stateBit={stateBit}
-          actionBit={actionBit}
-          setActionBit={setActionBit}
-          reward={reward}
-          done={done}
-          board={board}
-          modelParams={modelParams}
-          onlineModel={onlineModel}
-          setOnlineModel={setOnlineModel}
-        />
 
+    <div>
+      # Samples: {agent?.onlineModel?.trainingHistory?.length * agent?.BATCH_SIZE}
+      <button
+          className="ai-button"
+          onClick={() => agent?.onlineModel?.resetModel()}
+      >
+          Reset Model
+      </button>
+    </div>
           <div>
             {displayView &&
                 <View
                 ticks={ticks}
-                WIDTH={WIDTH}
-                HEIGHT={HEIGHT}
                 board={board}
                 setBoard={setBoard}
                 />
             }
             {displayChart &&
                 <TrainingChart
-                    onlineModel={onlineModel}
+                    onlineModel={agent?.onlineModel}
                 />
             }
           </div>

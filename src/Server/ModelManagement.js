@@ -113,7 +113,7 @@ export class tfModel{
     }
     //array -> tensor -> array
     async predictModel(input){
-        let output = this.model.predict(tf.tensor(input)).arraySync()
+        let output = this.model?.predict(tf.tensor(input)).arraySync()
         return new Promise((resolve, reject) => {
             resolve(output)
         })

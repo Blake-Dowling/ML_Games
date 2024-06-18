@@ -74,9 +74,9 @@ export class Board{
         }
     }
     grounded(piece){
-        for(let i=0; i<piece.pixels.length; i++){
-            const pixel = piece.pixels[i]
-            const below = new Pixel(pixel.x, pixel.y+1, null)
+        for(let i=0; i<piece?.pixels?.length; i++){
+            const pixel = piece?.pixels[i]
+            const below = new Pixel(pixel?.x, pixel?.y+1, null)
             if(this.ob(below)){
                 return true
             }
