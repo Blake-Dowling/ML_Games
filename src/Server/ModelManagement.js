@@ -32,8 +32,8 @@ export class tfModel{
         let model = tf.model({inputs: inputLayer, outputs:output})
         // console.log(model.summary())
         model.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
-
-        return model
+        this.model = model
+        // return model
     }
     async loadModel(){
         try{

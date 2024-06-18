@@ -40,7 +40,10 @@ export function Engine(props) {
     useEffect(() => {
 
         let newGame = game?.getState(action)
-        getAction(newGame)
+        if(newGame?.newState){
+          getAction(newGame)
+        }
+
         let newBoard = newGame?.workingBoard
         let newScore = newGame?.score
         let newHighScore = Math.max(newScore, highScore)

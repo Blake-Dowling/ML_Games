@@ -1,4 +1,3 @@
-import React, {useState, useEffect} from 'react'
 
 import { tfModel } from '../Server/ModelManagement'
 const tf = require('@tensorflow/tfjs')
@@ -12,6 +11,7 @@ export class Agent {
     this.rewards = []
     this.done = []
     this.onlineModel = this.loadModel(params)
+
   }
   loadModel(params){
     const inputSize = params[0]
@@ -25,14 +25,13 @@ export class Agent {
 
 
   async getPrediction(state, reward, done){
-    console.debug("-----------------------")
-    console.debug(state, reward, done)
     if(state === undefined || reward === undefined || done === undefined ||
       state === null || reward === null || done === null){
       return 0
     }
+
     let prediction = await this.onlineModel?.predictModel([state])
-    console.debug(prediction)
+
     prediction = tf.argMax(tf.tensor(prediction[0]), 0).arraySync()
 
     this.states.push(state)
