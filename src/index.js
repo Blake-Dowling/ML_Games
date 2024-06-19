@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 
 import { Routes, Route, Link, BrowserRouter } from 'react-router-dom'
-import { Home } from './Home/Home'
-import { Jump } from './Jump/Jump'
-import { Tetris } from './Tetris/Tetris'
-import { Engine } from './Engine/Engine'
+import { Home } from './Home/Home.js'
+import { Jump } from './Jump/Jump.js'
+import { Tetris } from './Tetris/Tetris.js'
+import { Engine } from './Engine/Engine.js'
 
 function App(){
   const [game, setGame] = useState(1)

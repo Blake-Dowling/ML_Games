@@ -1,21 +1,18 @@
 import React, {useState, useEffect} from 'react'
-import { View } from './View'
-import { Timer } from './Timer'
-import { Jump } from '../Jump/Jump'
-import { Tetris } from '../Tetris/Tetris'
+import { View } from './View.js'
+import { Timer } from './Timer.js'
+import { Jump } from '../Jump/Jump.js'
+import { Tetris } from '../Tetris/Tetris.js'
 
-import { Agent } from './Agent'
-import { TrainingChart } from './Chart'
-
-
-import KeyPress from './KeyPress'
+import { Agent } from './Agent.js'
+import { TrainingChart } from './Chart.js'
 
 
 export function Engine(props) {
     const [game, setGame] = useState(null) //stores state, reward, done
     const [agent, setAgent] = useState(null)
     const [score, setScore] = useState(0)
-    const [highScore, setHighScore] = useState(0)
+    // const [highScore, setHighScore] = useState(0)
     const [ticks, setTicks] = useState(0)
     const [board, setBoard] = useState(null)
     const [action, setAction] = useState(0) //required due to asynchronous call
@@ -32,6 +29,7 @@ export function Engine(props) {
       newGame.initGame()
       setGame(newGame)
       const agent = new Agent(newGame.modelParams)
+      console.debug("Agent loaded: ", agent)
       setAgent(agent)
       setBoard(newGame.workingBoard)
   }, []) //Todo: props.game
@@ -46,12 +44,9 @@ export function Engine(props) {
 
         let newBoard = newGame?.workingBoard
         let newScore = newGame?.score
-        let newHighScore = Math.max(newScore, highScore)
-        setHighScore(newHighScore)
-        if(agent?.states.length >= agent?.BATCH_SIZE+1){
-          agent?.trainModel(newHighScore)
-          setHighScore(0)
-        }
+        // let newHighScore = Math.max(newScore, highScore)
+        // setHighScore(newHighScore)
+
 
         setBoard(newBoard)
         setScore(newScore)
@@ -94,7 +89,8 @@ export function Engine(props) {
             }
             {displayChart &&
                 <TrainingChart
-                    onlineModel={agent?.onlineModel}
+                    agent={agent}
+                    ticks={ticks}
                 />
             }
           </div>

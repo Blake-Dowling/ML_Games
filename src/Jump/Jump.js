@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import './Jump.css'
 
-import { Piece, Board } from '../Engine/Objects'
+import { Piece, Board } from '../Engine/Objects.js'
 
 
 

@@ -1,5 +1,6 @@
-const tf = require('@tensorflow/tfjs')
-
+// const tf = require('@tensorflow/tfjs')
+import * as tf from '@tensorflow/tfjs'
+import axios from 'axios'
 export class tfModel{
     constructor(inputShape, outputShape, name){
         this.inputShape = inputShape
@@ -37,10 +38,23 @@ export class tfModel{
     }
     async loadModel(){
         try{
-            let loadedModel = await tf.loadLayersModel(`localstorage://${this.name}`)
-            this.trainingHistory = JSON.parse(localStorage.getItem(`${this.name}/trainingHistory`))
-            this.scoreHistory = JSON.parse(localStorage.getItem(`${this.name}/scoreHistory`))
+            // let loadedModel = await tf.loadLayersModel(`localstorage://${this.name}`)
+            // this.trainingHistory = JSON.parse(localStorage.getItem(`${this.name}/trainingHistory`))
+            // this.scoreHistory = JSON.parse(localStorage.getItem(`${this.name}/scoreHistory`))
             // let loadedModel = await tf.loadGraphModel(`/${this.name}`)//for loading statically once deployed
+            // let dir = await fetch(`/${this.name}/trainingHistory`)
+            // console.debug("dir: ", dir)
+            let loadedModel = await tf.loadLayersModel(`/${this.name}/model.json`)
+            let trainingHistory = await fetch(`/${this.name}/trainingHistory`)
+            trainingHistory = await trainingHistory.json()
+            this.trainingHistory = JSON.parse(trainingHistory)
+            let scoreHistory = await fetch(`/${this.name}/scoreHistory`)
+            scoreHistory = await scoreHistory.json()
+            this.scoreHistory = JSON.parse(scoreHistory)
+            // console.debug(typeof(this.trainingHistory))
+            // this.trainingHistory = JSON.parse(await fetch(`/${this.name}/trainingHistory`))
+            // this.scoreHistory = JSON.parse()
+            // console.debug(this.trainingHistory)
 
             loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
             this.model = loadedModel
@@ -49,22 +63,33 @@ export class tfModel{
         }
     }
     async saveModel(){
-        try{
-            this.model.save(`localstorage://${this.name}`)
-            localStorage.setItem(`${this.name}/trainingHistory`, JSON.stringify(this.trainingHistory))
-            localStorage.setItem(`${this.name}/scoreHistory`, JSON.stringify(this.scoreHistory))
-            return new Promise((resolve, reject) => {
-                resolve(true)
+        // Get model topology (JSON) and weights (binary)
+        const modelData = await this.model.save(tf.io.withSaveHandler(async (data) => data));
+
+        // Convert the weights data to a base64-encoded string
+        const weightsData = Buffer.from(modelData.weightData).toString('base64');
+
+        return new Promise((resolve, reject) => {
+            axios.post('http://localhost:3001/saveModel', {
+                data: {
+                    name: this.name,
+                    modelData: modelData,//.modelTopology,
+                    weightsData: weightsData,
+                    trainingHistory: JSON.stringify(this.trainingHistory),
+                    scoreHistory: JSON.stringify(this.scoreHistory)
+                }
             })
-        } catch(error){
-            console.error(error)
-        }
+            .then(response => {
+                resolve(response)
+            })
+            .catch(error => console.error('Error:', error))
+        })
     }
     async backupModel(){
         try{
-            this.model.save(`localstorage://${this.name}-backup`)
-            localStorage.setItem(`${this.name}/trainingHistory-backup`, JSON.stringify(this.trainingHistory))
-            localStorage.setItem(`${this.name}/scoreHistory-backup`, JSON.stringify(this.scoreHistory))
+            // this.model.save(`localstorage://${this.name}-backup`)
+            // localStorage.setItem(`${this.name}/trainingHistory-backup`, JSON.stringify(this.trainingHistory))
+            // localStorage.setItem(`${this.name}/scoreHistory-backup`, JSON.stringify(this.scoreHistory))
             return new Promise((resolve, reject) => {
                 resolve(true)
             })
@@ -73,10 +98,10 @@ export class tfModel{
         }
     }
     resetModel(){
-        localStorage.removeItem(`${this.name}`)
-        localStorage.removeItem(`${this.name}/trainingHistory`)
-        localStorage.removeItem(`${this.name}/scoreHistory`)
-        this.model = this.initModel(this.inputShape, this.outputShape)
+        // localStorage.removeItem(`${this.name}`)
+        // localStorage.removeItem(`${this.name}/trainingHistory`)
+        // localStorage.removeItem(`${this.name}/scoreHistory`)
+        this.model = this.initModel()
         this.trainingHistory = []
         this.scoreHistory = []
       }

@@ -1,7 +1,7 @@
 
-import { tfModel } from '../Server/ModelManagement'
-const tf = require('@tensorflow/tfjs')
-
+import { tfModel } from '../Server/ModelManagement.js'
+// const tf = require('@tensorflow/tfjs')
+import * as tf from '@tensorflow/tfjs'
 
 export class Agent {
   constructor(params){
@@ -11,7 +11,6 @@ export class Agent {
     this.rewards = []
     this.done = []
     this.onlineModel = this.loadModel(params)
-
   }
   loadModel(params){
     const inputSize = params[0]
