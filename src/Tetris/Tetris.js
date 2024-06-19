@@ -145,12 +145,12 @@ export class Tetris {
         for(let i=0; i<this.WIDTH; i++){
             heights.push(0)
         }
-        if(this.workingBoard === null){
+        if(!this.workingBoard || !this.workingBoard.board){
             return heights
         }
-        for(let r=0; r<(this.workingBoard?.length); r++){
-            for(let c=0; c<this.workingBoard[r].length; c++){
-                if(this.workingBoard[r][c] === 1 && heights[c] === 0){
+        for(let r=0; r<(this.workingBoard?.board?.length); r++){
+            for(let c=0; c<this.workingBoard?.board[r].length; c++){
+                if(this.workingBoard?.board[r][c] === 1 && heights[c] === 0){
                     heights[c] = this.HEIGHT - r
                 }
             }
@@ -159,11 +159,11 @@ export class Tetris {
     }
     #countHoles(){
         let numHoles = 0
-        for(let r=0; r<this.workingBoard.length-1; r++){
-            for(let c=0; c<this.workingBoard[r].length; c++){
-                if(this.workingBoard[r][c] > 0){
+        for(let r=0; r<this.workingBoard?.board?.length-1; r++){
+            for(let c=0; c<this.workingBoard?.board[r].length; c++){
+                if(this.workingBoard?.board[r][c] > 0){
                     let depth = 1
-                    while(r+depth < this.workingBoard.length && this.workingBoard[r+depth][c] === 0){
+                    while(r+depth < this.workingBoard?.board?.length && this.workingBoard?.board[r+depth][c] === 0){
                         numHoles ++
                         depth ++
                     }

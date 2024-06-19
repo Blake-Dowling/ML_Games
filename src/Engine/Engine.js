@@ -21,7 +21,7 @@ export function Engine(props) {
     const [displayChart, setDisplayChart] = useState(true)
 
     async function getAction(game){
-      let action = await agent?.getPrediction(game?.state, game?.reward, game?.done)
+      let action = await agent?.getPrediction(game?.state)
       setAction(action)
     }
     useEffect(() => {
@@ -29,6 +29,7 @@ export function Engine(props) {
       newGame.initGame()
       setGame(newGame)
       const agent = new Agent(newGame.modelParams)
+      agent.onlineModel.loadModel()
       console.debug("Agent loaded: ", agent)
       setAgent(agent)
       setBoard(newGame.workingBoard)

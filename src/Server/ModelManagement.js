@@ -1,6 +1,17 @@
-// const tf = require('@tensorflow/tfjs')
-import * as tf from '@tensorflow/tfjs'
 import axios from 'axios'
+import * as tf from '@tensorflow/tfjs'
+
+
+// const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
+// const tfPath = isNode ? '@tensorflow/tfjs' : '@tensorflow/tfjs-node'
+// const tf = await import(tfPath)
+
+
+
+// if(isNode){
+//     const fs = await import('fs')
+// }
+
 export class tfModel{
     constructor(inputShape, outputShape, name){
         this.inputShape = inputShape
@@ -38,12 +49,16 @@ export class tfModel{
     }
     async loadModel(){
         try{
-            // let loadedModel = await tf.loadLayersModel(`localstorage://${this.name}`)
-            // this.trainingHistory = JSON.parse(localStorage.getItem(`${this.name}/trainingHistory`))
-            // this.scoreHistory = JSON.parse(localStorage.getItem(`${this.name}/scoreHistory`))
-            // let loadedModel = await tf.loadGraphModel(`/${this.name}`)//for loading statically once deployed
-            // let dir = await fetch(`/${this.name}/trainingHistory`)
-            // console.debug("dir: ", dir)
+            // if(isNode){
+                // let loadedModel = await tf.loadLayersModel(`file://../../public/${this.name}/model.json`)
+                // let trainingHistory = await fs.loadData(`../../public/${this.name}/trainingHistory`)
+                // trainingHistory = await trainingHistory.json()
+                // this.trainingHistory = JSON.parse(trainingHistory)
+                // let scoreHistory = await fs.loadData(`../../public/${this.name}/scoreHistory`)
+                // scoreHistory = await scoreHistory.json()
+                // this.scoreHistory = JSON.parse(scoreHistory)
+            // }
+            // else{
             let loadedModel = await tf.loadLayersModel(`/${this.name}/model.json`)
             let trainingHistory = await fetch(`/${this.name}/trainingHistory`)
             trainingHistory = await trainingHistory.json()
@@ -51,10 +66,7 @@ export class tfModel{
             let scoreHistory = await fetch(`/${this.name}/scoreHistory`)
             scoreHistory = await scoreHistory.json()
             this.scoreHistory = JSON.parse(scoreHistory)
-            // console.debug(typeof(this.trainingHistory))
-            // this.trainingHistory = JSON.parse(await fetch(`/${this.name}/trainingHistory`))
-            // this.scoreHistory = JSON.parse()
-            // console.debug(this.trainingHistory)
+            // }
 
             loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
             this.model = loadedModel
@@ -64,10 +76,13 @@ export class tfModel{
     }
     async saveModel(){
         // Get model topology (JSON) and weights (binary)
-        const modelData = await this.model.save(tf.io.withSaveHandler(async (data) => data));
+        if(!this.model){
+            return new Promise((resolve) => resolve(false))
+        }
+        const modelData = await this.model?.save(tf.io.withSaveHandler(async (data) => data));
 
         // Convert the weights data to a base64-encoded string
-        const weightsData = Buffer.from(modelData.weightData).toString('base64');
+        const weightsData = Buffer.from(modelData?.weightData).toString('base64');
 
         return new Promise((resolve, reject) => {
             axios.post('http://localhost:3001/saveModel', {
@@ -97,13 +112,15 @@ export class tfModel{
             console.error(error)
         }
     }
-    resetModel(){
+    async resetModel(){
         // localStorage.removeItem(`${this.name}`)
         // localStorage.removeItem(`${this.name}/trainingHistory`)
         // localStorage.removeItem(`${this.name}/scoreHistory`)
-        this.model = this.initModel()
+
+        this.initModel()
         this.trainingHistory = []
         this.scoreHistory = []
+        await this.saveModel()
       }
     // ob<array> -> tensor
     async trainModel(input){
