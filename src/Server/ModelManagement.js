@@ -100,10 +100,9 @@ export class tfModel{
                 scoreHistory = await scoreHistory.json()
 
             }
-
-            this.trainingHistory = JSON.parse(trainingHistory)
-            // console.debug(this.trainingHistory)
-            this.scoreHistory = JSON.parse(scoreHistory)
+            this.trainingHistory = trainingHistory
+            
+            this.scoreHistory = scoreHistory
             loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
             this.model = loadedModel
         } catch(error){
@@ -183,7 +182,7 @@ export class tfModel{
         let history = await this.model.fit(tfInput, targetOutput, {epochs: 1, shuffle: true})
         const loss = history.history.loss
         const accuracy = history.history.acc
-        this.trainingHistory = this.trainingHistory ? this.trainingHistory.concat(loss) : loss
+        this.trainingHistory = []//this.trainingHistory ? this.trainingHistory.concat(loss) : loss
         console.log("loss: ", loss[loss.length-1], "accuracy: ", accuracy[accuracy.length-1])
         return new Promise((resolve, reject) => {
             resolve(history)

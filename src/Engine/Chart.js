@@ -17,7 +17,7 @@ export function TrainingChart(props) {
     function updateData(){
         return {
             // ...prevData,
-            labels: generateRange(props.agent?.onlineModel?.trainingHistory?.length, props.agent?.BATCH_SIZE),
+            labels: generateRange(props.agent?.onlineModel?.scoreHistory?.length, props.agent?.BATCH_SIZE),
             datasets: [
                 {
                     label: 'Loss',

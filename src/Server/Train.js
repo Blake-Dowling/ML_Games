@@ -9,15 +9,15 @@ function sleep(ms) {
 let game = new Tetris()
 game.initGame()
 const agent = new Agent(game.modelParams)
-await sleep(4000)
+await sleep(5000)
 // agent.onlineModel.resetModel()
 // console.debug(agent.onlineModel.model)
 let action = 0
 
 let highScore = 0
-// console.debug(agent?.onlineModel?.trainingHistory)
+console.debug(agent?.onlineModel?.trainingHistory)
 async function train(){
-    for(let i=0; i<200000; i++){
+    for(let i=0; i<5000000; i++){
         // await sleep(200)
         // console.debug(i, "-----------------------------")
         game = game?.getState(action)
@@ -33,9 +33,11 @@ async function train(){
           await agent?.trainModel(highScore)
           highScore = 0
           console.debug(i, "-----------------------------")
+        //   await sleep(10)
         }
     
     }
     agent?.onlineModel?.saveModel()
+
 }
 train()

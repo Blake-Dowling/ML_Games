@@ -1,3 +1,0 @@
-In tetris, the state is the placed board, and the action is the next placement, as opposed to the movement on the piece.
-
-I had initially implemented a live-updating array of losses and scores per epoch with the chart displayed below the game board. Because this array becomes very large, it cannot be continuously updated in a state variable.   UseEffect is used to prevent rendering of chart data unless model state is updated.

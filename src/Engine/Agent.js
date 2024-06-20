@@ -7,7 +7,7 @@ import * as tf from '@tensorflow/tfjs'
 
 export class Agent {
   constructor(params){
-    this.BATCH_SIZE = 1024
+    this.BATCH_SIZE = 16384
     this.states = []
     this.actions = []
     this.rewards = []
@@ -67,7 +67,7 @@ export class Agent {
         this.actions = []
         this.rewards = []
         this.done = []
-        // console.debug(onlineModel?.trainingHistory)
+        console.debug(highScore)
         if(onlineModel?.scoreHistory){
           onlineModel?.scoreHistory?.push(highScore)
         }
