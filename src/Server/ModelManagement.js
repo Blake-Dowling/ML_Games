@@ -2,7 +2,7 @@ import axios from 'axios'
 import * as tf from '@tensorflow/tfjs'
 
 
-// const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
+const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
 // const tfPath = isNode ? '@tensorflow/tfjs' : '@tensorflow/tfjs-node'
 // const tf = await import(tfPath)
 
@@ -11,6 +11,17 @@ import * as tf from '@tensorflow/tfjs'
 // if(isNode){
 //     const fs = await import('fs')
 // }
+const createMemoryIOHandler = (modelJson, weightsArrayBuffer) => {
+    return {
+      load: async () => {
+        return {
+          modelTopology: modelJson.modelTopology,
+          weightSpecs: modelJson.weightsManifest[0].weights,
+          weightData: new Uint8Array(weightsArrayBuffer),
+        };
+      },
+    };
+  }
 
 export class tfModel{
     constructor(inputShape, outputShape, name){
@@ -49,25 +60,50 @@ export class tfModel{
     }
     async loadModel(){
         try{
-            // if(isNode){
-                // let loadedModel = await tf.loadLayersModel(`file://../../public/${this.name}/model.json`)
-                // let trainingHistory = await fs.loadData(`../../public/${this.name}/trainingHistory`)
-                // trainingHistory = await trainingHistory.json()
-                // this.trainingHistory = JSON.parse(trainingHistory)
-                // let scoreHistory = await fs.loadData(`../../public/${this.name}/scoreHistory`)
-                // scoreHistory = await scoreHistory.json()
-                // this.scoreHistory = JSON.parse(scoreHistory)
-            // }
-            // else{
-            let loadedModel = await tf.loadLayersModel(`/${this.name}/model.json`)
-            let trainingHistory = await fetch(`/${this.name}/trainingHistory`)
-            trainingHistory = await trainingHistory.json()
-            this.trainingHistory = JSON.parse(trainingHistory)
-            let scoreHistory = await fetch(`/${this.name}/scoreHistory`)
-            scoreHistory = await scoreHistory.json()
-            this.scoreHistory = JSON.parse(scoreHistory)
-            // }
+            let loadedModel = undefined
+            let trainingHistory = undefined
+            let scoreHistory = undefined
+            let modelData = undefined
+            let weightsData = undefined
+            if(isNode){
+                const response = new Promise((resolve, reject) => {
+                    axios.post('http://localhost:3001/loadModel', {
+                        data: {
+                            name: this.name,
+                        }
+                    })
+                    .then(response => {
+                        const result = response.data.response
+                        resolve(result)
 
+                    })
+                    .catch(error => console.error('Error:', error))
+                })
+                const result = await response
+
+                // console.debug("result:", result)
+                modelData = JSON.parse(result.modelData)
+
+                weightsData = result.weightsData
+                // console.debug("weightsData: ", typeof(weightsData))
+                trainingHistory = JSON.parse(result.trainingHistory)
+                scoreHistory = JSON.parse(result.scoreHistory)
+                // console.debug(result.trainingHistory)
+                const ioHandler = createMemoryIOHandler(modelData, weightsData.data)
+                loadedModel = await tf.loadLayersModel(ioHandler)
+            }
+            else{
+                loadedModel = await tf.loadLayersModel(`/${this.name}/model.json`)
+                trainingHistory = await fetch(`/${this.name}/trainingHistory`)
+                trainingHistory = await trainingHistory.json()
+                scoreHistory = await fetch(`/${this.name}/scoreHistory`)
+                scoreHistory = await scoreHistory.json()
+
+            }
+
+            this.trainingHistory = JSON.parse(trainingHistory)
+            // console.debug(this.trainingHistory)
+            this.scoreHistory = JSON.parse(scoreHistory)
             loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
             this.model = loadedModel
         } catch(error){
@@ -80,7 +116,7 @@ export class tfModel{
             return new Promise((resolve) => resolve(false))
         }
         const modelData = await this.model?.save(tf.io.withSaveHandler(async (data) => data));
-
+        // console.debug(modelData)
         // Convert the weights data to a base64-encoded string
         const weightsData = Buffer.from(modelData?.weightData).toString('base64');
 
@@ -88,7 +124,7 @@ export class tfModel{
             axios.post('http://localhost:3001/saveModel', {
                 data: {
                     name: this.name,
-                    modelData: modelData,//.modelTopology,
+                    modelData: JSON.stringify(modelData),//.modelTopology,
                     weightsData: weightsData,
                     trainingHistory: JSON.stringify(this.trainingHistory),
                     scoreHistory: JSON.stringify(this.scoreHistory)
@@ -100,18 +136,18 @@ export class tfModel{
             .catch(error => console.error('Error:', error))
         })
     }
-    async backupModel(){
-        try{
-            // this.model.save(`localstorage://${this.name}-backup`)
-            // localStorage.setItem(`${this.name}/trainingHistory-backup`, JSON.stringify(this.trainingHistory))
-            // localStorage.setItem(`${this.name}/scoreHistory-backup`, JSON.stringify(this.scoreHistory))
-            return new Promise((resolve, reject) => {
-                resolve(true)
-            })
-        } catch(error){
-            console.error(error)
-        }
-    }
+    // async backupModel(){
+    //     try{
+    //         // this.model.save(`localstorage://${this.name}-backup`)
+    //         // localStorage.setItem(`${this.name}/trainingHistory-backup`, JSON.stringify(this.trainingHistory))
+    //         // localStorage.setItem(`${this.name}/scoreHistory-backup`, JSON.stringify(this.scoreHistory))
+    //         return new Promise((resolve, reject) => {
+    //             resolve(true)
+    //         })
+    //     } catch(error){
+    //         console.error(error)
+    //     }
+    // }
     async resetModel(){
         // localStorage.removeItem(`${this.name}`)
         // localStorage.removeItem(`${this.name}/trainingHistory`)
@@ -128,7 +164,7 @@ export class tfModel{
         const onlineOutput = await this.predictModel(input.states)
         //Current highest q value for each (next) state
         const maxOnlineQValues = tf.max(onlineOutput, 1).arraySync()
-        console.log(maxOnlineQValues)
+        // console.log(maxOnlineQValues)
         for(let i=0; i<input.states.length-1; i++){
             // console.log(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
             if(input.done[i] !== true){

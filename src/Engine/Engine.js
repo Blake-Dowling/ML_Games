@@ -21,21 +21,21 @@ export function Engine(props) {
     const [displayChart, setDisplayChart] = useState(true)
 
     async function getAction(game){
-      let action = await agent?.getPrediction(game?.state)
-      setAction(action)
+      let newAction = await agent?.getPrediction(game?.state)
+      setAction(newAction)
     }
     useEffect(() => {
       const newGame = new Tetris()
       newGame.initGame()
       setGame(newGame)
       const agent = new Agent(newGame.modelParams)
-      agent.onlineModel.loadModel()
+      // agent.onlineModel.loadModel()
       console.debug("Agent loaded: ", agent)
       setAgent(agent)
       setBoard(newGame.workingBoard)
   }, []) //Todo: props.game
 
-    //Evevnt loop
+    //Event loop
     useEffect(() => {
 
         let newGame = game?.getState(action)
@@ -45,9 +45,6 @@ export function Engine(props) {
 
         let newBoard = newGame?.workingBoard
         let newScore = newGame?.score
-        // let newHighScore = Math.max(newScore, highScore)
-        // setHighScore(newHighScore)
-
 
         setBoard(newBoard)
         setScore(newScore)

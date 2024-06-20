@@ -2,10 +2,10 @@ import React, {useState, useEffect} from 'react'
 import Chart from "chart.js/auto";
 import { Line } from 'react-chartjs-2'
 
-function generateRange(number){
+function generateRange(number, batchSize){
     let range = []
     for(let i=1; i<=number; i++){
-        range.push(i)
+        range.push(i*batchSize)
     }
     return range
 }
@@ -17,7 +17,7 @@ export function TrainingChart(props) {
     function updateData(){
         return {
             // ...prevData,
-            labels: generateRange(props.agent?.onlineModel?.trainingHistory?.length),
+            labels: generateRange(props.agent?.onlineModel?.trainingHistory?.length, props.agent?.BATCH_SIZE),
             datasets: [
                 {
                     label: 'Loss',

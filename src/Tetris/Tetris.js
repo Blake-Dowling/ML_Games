@@ -31,7 +31,6 @@ export class Tetris {
     getState(action){
         //Action
         //Player movement
-        // console.debug(action)
         this.#movePlayer(action)
         this.#gravityPlayer()
         //Player movement result

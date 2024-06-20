@@ -13,6 +13,7 @@ export class Agent {
     this.rewards = []
     this.done = []
     this.onlineModel = this.loadModel(params)
+
   }
   loadModel(params){
     const inputSize = params[0]
@@ -20,22 +21,24 @@ export class Agent {
     const name = params[2]
     let onlineModel = new tfModel(inputSize, outputSize, name)
     onlineModel.initModel()
-    // onlineModel.loadModel()
+    onlineModel.loadModel()
     return onlineModel
   }
 
 
   async getPrediction(state){
-    if(state === undefined || state === null){
+    // console.debug(state)
+    if(state === undefined || state === null || !this.onlineModel){
       return 0
     }
-
+    // console.debug(this?.onlineModel)
     let prediction = await this.onlineModel?.predictModel([state])
 
     prediction = tf.argMax(tf.tensor(prediction[0]), 0).arraySync()
-
-    return prediction
+    // console.debug(state)
     // console.debug(states[states.length-1], actions[actions.length-1], rewards[rewards.length-1], done[done.length-1])
+    return prediction
+
   }
   pushDataPoint(state, prediction, reward, done){
     if(state === undefined || reward === undefined || done === undefined ||
@@ -64,6 +67,7 @@ export class Agent {
         this.actions = []
         this.rewards = []
         this.done = []
+        // console.debug(onlineModel?.trainingHistory)
         if(onlineModel?.scoreHistory){
           onlineModel?.scoreHistory?.push(highScore)
         }
@@ -71,8 +75,10 @@ export class Agent {
           onlineModel.scoreHistory = [highScore]
         }
         const history = await onlineModel?.trainModel(input)
+        // console.debug("History:", history)
 
-        onlineModel?.saveModel()
+        // onlineModel?.saveModel()
+        // console.debug("Agent saved: ", onlineModel?.model?.getWeights())
         // if(onlineModel.scoreHistory.length !== 0 && (onlineModel.scoreHistory.length*this.BATCH_SIZE) % 50000 < this.BATCH_SIZE){
         //   onlineModel.backupModel()
         // }
