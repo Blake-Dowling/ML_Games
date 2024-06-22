@@ -7,7 +7,7 @@ import * as tf from '@tensorflow/tfjs'
 
 export class Agent {
   constructor(params){
-    this.BATCH_SIZE = 16384
+    this.BATCH_SIZE = 1024//16384
     this.states = []
     this.actions = []
     this.rewards = []

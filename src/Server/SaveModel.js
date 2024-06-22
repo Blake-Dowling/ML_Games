@@ -86,7 +86,7 @@ async function loadModel(name){
                 trainingHistory: trainingHistory,
                 scoreHistory: scoreHistory
             }
-            console.debug(result)
+            // console.debug(result)
             resolve(result)
         })
     } catch(error){
