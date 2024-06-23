@@ -69,13 +69,7 @@ export function Engine(props) {
         </button>
 
     <div>
-      # Samples: {agent?.onlineModel?.trainingHistory?.length * agent?.BATCH_SIZE}
-      <button
-          className="ai-button"
-          onClick={() => agent?.onlineModel?.resetModel()}
-      >
-          Reset Model
-      </button>
+      # Samples: {agent?.onlineModel?.scoreHistory?.length * agent?.BATCH_SIZE}
     </div>
           <div>
             {displayView &&

@@ -4,6 +4,9 @@ class Pixel{
         this.y = y
         this.val = val
     }
+    colliding(otherPixel){
+        return this.x === otherPixel.x && this.y === otherPixel.y
+    }
 }
 export class Piece{
     constructor(x, y, val){

@@ -20,9 +20,8 @@ app.post('/saveModel', async (req, res) => {
     const modelData = req.body.data.modelData
     const weightsData = req.body.data.weightsData
     const trainingHistory = req.body.data.trainingHistory
-    const scoreHistory = req.body.data.scoreHistory
     try{
-        const result = await saveModel(name, modelData, weightsData, trainingHistory, scoreHistory)
+        const result = await saveModel(name, modelData, weightsData, trainingHistory)
         res.json({response: result})
     } catch(error){
         console.error('Error:', error.message)
@@ -30,7 +29,7 @@ app.post('/saveModel', async (req, res) => {
     }
 })
 
-async function saveModel(name, modelData, weightsData, trainingHistory, scoreHistory){
+async function saveModel(name, modelData, weightsData, trainingHistory){
     try{
         const newModelData = JSON.parse(modelData)
         // Convert base64-encoded weights back to buffer
@@ -43,12 +42,11 @@ async function saveModel(name, modelData, weightsData, trainingHistory, scoreHis
                 weights: newModelData.weightSpecs
             }]
         })
-        // console.debug(modelJson)
+        console.debug(trainingHistory)
         // model.save(`file://../../public/${name}/`)
         fs.writeFileSync(`../../public/${name}/model.json`, modelJson)
         fs.writeFileSync(`../../public/${name}/weights.bin`, weightsBuffer)
         fs.writeFileSync(`../../public/${name}/trainingHistory`, trainingHistory, 'utf-8')
-        fs.writeFileSync(`../../public/${name}/scoreHistory`, scoreHistory, 'utf-8')
         return new Promise((resolve, reject) => {
             resolve(true)
         })
@@ -78,13 +76,11 @@ async function loadModel(name){
         let modelData = fs.readFileSync(`../../public/${name}/model.json`).toString('utf8')
         let weightsData = fs.readFileSync(`../../public/${name}/weights.bin`)
         let trainingHistory = fs.readFileSync(`../../public/${name}/trainingHistory`).toString('utf8')
-        let scoreHistory = fs.readFileSync(`../../public/${name}/scoreHistory`).toString('utf8')
         return new Promise((resolve, reject) => {
             const result = {
                 modelData: modelData,//.modelTopology,
                 weightsData: weightsData,
                 trainingHistory: trainingHistory,
-                scoreHistory: scoreHistory
             }
             // console.debug(result)
             resolve(result)

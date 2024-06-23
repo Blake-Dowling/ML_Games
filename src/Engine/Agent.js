@@ -7,7 +7,7 @@ import * as tf from '@tensorflow/tfjs'
 
 export class Agent {
   constructor(params){
-    this.BATCH_SIZE = 1024//16384
+    this.BATCH_SIZE = 1024
     this.states = []
     this.actions = []
     this.rewards = []
@@ -22,6 +22,7 @@ export class Agent {
     let onlineModel = new tfModel(inputSize, outputSize, name)
     onlineModel.initModel()
     onlineModel.loadModel()
+
     return onlineModel
   }
 
@@ -50,11 +51,13 @@ export class Agent {
     this.rewards.push(reward)
     this.done.push(done)
   }
-  async trainModel(highScore){
+  async trainModel(){
         //Shallow copy onlineModel attribute for agent re-render in Engine
         const onlineModel = new tfModel(this.onlineModel.inputShape, this.onlineModel.outputShape, this.onlineModel.name)
         onlineModel.model = this.onlineModel.model
-        onlineModel.trainingHistory = this.onlineModel.trainingHistory
+        onlineModel.sampleCountHistory = this.onlineModel.sampleCountHistory
+        onlineModel.lossHistory = this.onlineModel.lossHistory
+        onlineModel.accuracyHistory = this.onlineModel.accuracyHistory
         onlineModel.scoreHistory = this.onlineModel.scoreHistory
         const input = {
           'states': this.states,
@@ -67,23 +70,13 @@ export class Agent {
         this.actions = []
         this.rewards = []
         this.done = []
-        console.debug(highScore)
-        if(onlineModel?.scoreHistory){
-          onlineModel?.scoreHistory?.push(highScore)
-        }
-        else{
-          onlineModel.scoreHistory = [highScore]
-        }
+
         const history = await onlineModel?.trainModel(input)
-        // console.debug("History:", history)
 
-        // onlineModel?.saveModel()
-        // console.debug("Agent saved: ", onlineModel?.model?.getWeights())
-        // if(onlineModel.scoreHistory.length !== 0 && (onlineModel.scoreHistory.length*this.BATCH_SIZE) % 50000 < this.BATCH_SIZE){
-        //   onlineModel.backupModel()
-        // }
         this.onlineModel = onlineModel
-
+        return new Promise((resolve, reject) => {
+          resolve(history)
+      })
   }
 
 }

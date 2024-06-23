@@ -29,7 +29,9 @@ export class tfModel{
         this.outputShape = outputShape
         this.name = name
         this.model = null
-        this.trainingHistory = []
+        this.sampleCountHistory = []
+        this.lossHistory = []
+        this.accuracyHistory = []
         this.scoreHistory = []
     }
 
@@ -62,7 +64,6 @@ export class tfModel{
         try{
             let loadedModel = undefined
             let trainingHistory = undefined
-            let scoreHistory = undefined
             let modelData = undefined
             let weightsData = undefined
             if(isNode){
@@ -87,7 +88,6 @@ export class tfModel{
                 weightsData = result.weightsData
                 // console.debug("weightsData: ", typeof(weightsData))
                 trainingHistory = JSON.parse(result.trainingHistory)
-                scoreHistory = JSON.parse(result.scoreHistory)
                 // console.debug(result.trainingHistory)
                 const ioHandler = createMemoryIOHandler(modelData, weightsData.data)
                 loadedModel = await tf.loadLayersModel(ioHandler)
@@ -96,13 +96,12 @@ export class tfModel{
                 loadedModel = await tf.loadLayersModel(`/${this.name}/model.json`)
                 trainingHistory = await fetch(`/${this.name}/trainingHistory`)
                 trainingHistory = await trainingHistory.json()
-                scoreHistory = await fetch(`/${this.name}/scoreHistory`)
-                scoreHistory = await scoreHistory.json()
 
             }
-            this.trainingHistory = trainingHistory
-            
-            this.scoreHistory = scoreHistory
+            this.sampleCountHistory = trainingHistory.sampleCountHistory
+            this.lossHistory = trainingHistory.lossHistory
+            this.accuracyHistory = trainingHistory.accuracyHistory
+            this.scoreHistory = trainingHistory.scoreHistory
             loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
             this.model = loadedModel
         } catch(error){
@@ -118,15 +117,20 @@ export class tfModel{
         // console.debug(modelData)
         // Convert the weights data to a base64-encoded string
         const weightsData = Buffer.from(modelData?.weightData).toString('base64');
-
+        // console.debug(this.lossHistory)
         return new Promise((resolve, reject) => {
             axios.post('http://localhost:3001/saveModel', {
                 data: {
                     name: this.name,
                     modelData: JSON.stringify(modelData),//.modelTopology,
                     weightsData: weightsData,
-                    trainingHistory: JSON.stringify(this.trainingHistory),
-                    scoreHistory: JSON.stringify(this.scoreHistory)
+                    trainingHistory: JSON.stringify({
+                        sampleCountHistory: this.sampleCountHistory,
+                        lossHistory: this.lossHistory,
+                        accuracyHistory: this.accuracyHistory,
+                        scoreHistory: this.scoreHistory
+                    })
+
                 }
             })
             .then(response => {
@@ -135,28 +139,7 @@ export class tfModel{
             .catch(error => console.error('Error:', error))
         })
     }
-    // async backupModel(){
-    //     try{
-    //         // this.model.save(`localstorage://${this.name}-backup`)
-    //         // localStorage.setItem(`${this.name}/trainingHistory-backup`, JSON.stringify(this.trainingHistory))
-    //         // localStorage.setItem(`${this.name}/scoreHistory-backup`, JSON.stringify(this.scoreHistory))
-    //         return new Promise((resolve, reject) => {
-    //             resolve(true)
-    //         })
-    //     } catch(error){
-    //         console.error(error)
-    //     }
-    // }
-    async resetModel(){
-        // localStorage.removeItem(`${this.name}`)
-        // localStorage.removeItem(`${this.name}/trainingHistory`)
-        // localStorage.removeItem(`${this.name}/scoreHistory`)
 
-        this.initModel()
-        this.trainingHistory = []
-        this.scoreHistory = []
-        await this.saveModel()
-      }
     // ob<array> -> tensor
     async trainModel(input){
         //existing q values to fill in output tensor aside from newly trained actions
@@ -182,7 +165,7 @@ export class tfModel{
         let history = await this.model.fit(tfInput, targetOutput, {epochs: 1, shuffle: true})
         const loss = history.history.loss
         const accuracy = history.history.acc
-        this.trainingHistory = []//this.trainingHistory ? this.trainingHistory.concat(loss) : loss
+        // this.trainingHistory = this.trainingHistory ? this.trainingHistory.concat(loss) : loss
         console.log("loss: ", loss[loss.length-1], "accuracy: ", accuracy[accuracy.length-1])
         return new Promise((resolve, reject) => {
             resolve(history)
