@@ -14,7 +14,7 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.post('/saveModel', async (req, res) => {
     // console.debug("-----------------------------------")
-    // console.debug(req.body)
+    console.debug(req.body)
     // console.debug("-----------------------------------")
     const name = req.body.data.name
     const modelData = req.body.data.modelData

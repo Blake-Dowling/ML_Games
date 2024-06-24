@@ -1,6 +1,6 @@
 
 
-import { Board, Piece, TetrisBlock } from '../Engine/Objects.js'
+import { Board, Pixel, TetrisBlock } from '../Engine/Objects.js'
 
 // ******************************************************
 // ****************** Main Game Component ******************
@@ -17,25 +17,26 @@ export class Tetris {
         this.newState = false
         this.WIDTH = 6
         this.HEIGHT = 10
-        this.modelParams = [this.WIDTH+3, 4*this.WIDTH, 'tetris-model']
+        this.modelParams = [this.WIDTH+3, 4*this.WIDTH, 'tetris-model-4']
         this.initGame()
     }
     initGame(){
         this.player = this.#newBlock()
         this.restingPixels = []
-        this.workingBoard = new Board(this.WIDTH, this.HEIGHT, [this.player])
+        this.workingBoard = new Board(this.WIDTH, this.HEIGHT, this.player.pixels)
         this.score = 0
         // props.setScore(0)
     }
 
     getState(action){
-        //Action
-        //Player movement
+        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.restingPixels)
         this.#movePlayer(action)
         this.#gravityPlayer()
         //Player movement result
-        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, [this.player, ...this.restingPixels])
+        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.restingPixels)
         const blockStop = this.#checkBlockStop()
+        // console.debug(this.player.pixels)
+        // console.debug(this.restingPixels)
         // //New board result
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.restingPixels)
         const numCompleteRows = this.#checkCompleteRows()
@@ -60,8 +61,10 @@ export class Tetris {
         }else{
             this.newState = false
         }
+        //Action
+        //Player movement
 
-        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, [this.player, ...this.restingPixels])
+        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, [...this.player.pixels, ...this.restingPixels])
 
         return this
     }
@@ -77,7 +80,7 @@ export class Tetris {
     }
     // ****************** Player movement ******************
     #gravityPlayer(){
-        if(!this.workingBoard?.grounded(this.player)){
+        if(!this.workingBoard?.grounded(this.player.pixels)){
               this.player.y += 1
         }
         this.player = new TetrisBlock(this.player.x, this.player.y, this.player.orientation, this.player.type)
@@ -90,12 +93,12 @@ export class Tetris {
 
     // ****************** Game mechanics ******************
     #checkBlockStop(){
-        if(this.workingBoard.grounded(this.player)){
-            const newPieces = []
+        if(this.workingBoard.grounded(this.player.pixels)){
+            const newPixels = []
             for(let i=0; i<this.player.pixels.length; i++){
-                newPieces.push(new Piece(this.player.pixels[i].x, this.player.pixels[i].y, 1))
+                newPixels.push(new Pixel(this.player.pixels[i].x, this.player.pixels[i].y, 1))
             }
-            this.restingPixels = this.restingPixels.concat(...newPieces)
+            this.restingPixels = this.restingPixels.concat(newPixels)
             this.player = this.#newBlock()
             return true
         }
@@ -123,7 +126,7 @@ export class Tetris {
         for(let i=this.workingBoard.board.length-1; i>=0; i--){
             for(let j=0; j<this.workingBoard.board[i].length; j++){
                 if(this.workingBoard.board[i][j] > 0){
-                    this.restingPixels.push(new Piece(j, i, this.workingBoard.board[i][j]))
+                    this.restingPixels.push(new Pixel(j, i, this.workingBoard.board[i][j]))
                 }
             }
         }

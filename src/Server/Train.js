@@ -1,6 +1,7 @@
 // Tetris = require('../Tetris/Tetris.js')
 // Agent = require('../Engine/Agent')
 import { Tetris } from '../Tetris/Tetris.js'
+import { Snake } from '../Snake/Snake.js'
 import { Agent } from '../Engine/Agent.js'
 
 // const audio = document.getElementById('audio1')
@@ -9,7 +10,8 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-let game = new Tetris()
+// let game = new Tetris()
+let game = new Snake()
 game.initGame()
 const agent = new Agent(game.modelParams)
 await sleep(5000)
@@ -32,8 +34,9 @@ async function train(session, numSessions){
         // console.debug(i, "-----------------------------")
         game = game?.getState(action)
         if(game?.newState){
-            // console.debug(game.state)
+
             action = await agent?.getPrediction(game?.state)
+            // console.debug(game.state)
             agent?.pushDataPoint(game?.state, action, game?.reward, game?.done)
         }
     
@@ -65,6 +68,7 @@ async function train(session, numSessions){
     agent?.onlineModel?.accuracyHistory?.push(accuracy)
     agent?.onlineModel?.scoreHistory?.push(avgHighScore/BATCHES_PER_SESSION)
 
+    await sleep(200)
     await agent?.onlineModel?.saveModel()
 
     // audio.play()

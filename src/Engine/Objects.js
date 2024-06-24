@@ -1,4 +1,4 @@
-class Pixel{
+export class Pixel{
     constructor(x, y, val){
         this.x = x
         this.y = y
@@ -8,45 +8,13 @@ class Pixel{
         return this.x === otherPixel.x && this.y === otherPixel.y
     }
 }
-export class Piece{
-    constructor(x, y, val){
-        this.x = x
-        this.y = y
-        this.val = val 
-        this.init()
-    }
-    init(){
-        this.pixels = [new Pixel(this.x, this.y, this.val)]
-    }
-    move(xDist, yDist){
-        this.x = this.x+xDist
-        this.y = this.y+yDist
-        this.init()
-    }
-    colliding(piece){
-        for(let i=0; i<this.pixels.length; i++){
-            const pixelA = this.pixels[i]
-            for(let j=0; j<piece.pixels.length; j++){
-                const pixelB = piece.pixels[j]
-                if(pixelA.x == pixelB.x && pixelA.y == pixelB.y){
-                    return true
-                }
-            }
-        }
-        return false
-    }
 
-    dist(otherPiece){
-        return Math.abs(this.x - otherPiece.x)
-    }
-
-
-}
 export class Board{
-    constructor(width, height, pieces){
+    constructor(width, height, pixels){
         this.width = width
         this.height = height
-        this.pieces = JSON.parse(JSON.stringify(pieces))
+        this.pixels = pixels
+        this.refresh()
         this.draw()
     }
     refresh(){
@@ -66,19 +34,22 @@ export class Board{
     //Todo: multicell object
     draw(){
         this.refresh()
-        for(let i=0; i<this.pieces.length; i++){
-            const pixels = this.pieces[i].pixels
-            for(let j=0; j<pixels.length; j++){
-                const pixel = pixels[j]
-                if(!this.ob(pixel)){
-                    this.board[pixel.y][pixel.x] = pixel.val
-                }
+        // console.debug(this.pixels)
+        for(let j=0; j<this.pixels.length; j++){
+            const pixel = this.pixels[j]
+            // if(this.board && this.board[pixel.y] && this.board[pixel.y][pixel.x] && !this.ob(pixel)){
+
+            if(this.board && !this.ob(pixel)){
+                // console.debug(this.board)
+
+                this.board[pixel.y][pixel.x] = pixel.val
             }
         }
+        
     }
-    grounded(piece){
-        for(let i=0; i<piece?.pixels?.length; i++){
-            const pixel = piece?.pixels[i]
+    grounded(pixels){
+        for(let i=0; i<pixels?.length; i++){
+            const pixel = pixels[i]
             const below = new Pixel(pixel?.x, pixel?.y+1, null)
             if(this.ob(below)){
                 return true

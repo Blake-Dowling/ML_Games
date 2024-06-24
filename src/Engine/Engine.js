@@ -1,8 +1,9 @@
 import React, {useState, useEffect} from 'react'
 import { View } from './View.js'
 import { Timer } from './Timer.js'
-import { Jump } from '../Jump/Jump.js'
+// import { Jump } from '../Jump/Jump.js'
 import { Tetris } from '../Tetris/Tetris.js'
+import { Snake } from '../Snake/Snake.js'
 
 import { Agent } from './Agent.js'
 import { TrainingChart } from './Chart.js'
@@ -25,7 +26,8 @@ export function Engine(props) {
       setAction(newAction)
     }
     useEffect(() => {
-      const newGame = new Tetris()
+      // const newGame = new Tetris()
+      const newGame = new Snake()
       newGame.initGame()
       setGame(newGame)
       const agent = new Agent(newGame.modelParams)
@@ -37,7 +39,6 @@ export function Engine(props) {
 
     //Event loop
     useEffect(() => {
-
         let newGame = game?.getState(action)
         if(newGame?.newState){
           getAction(newGame)
@@ -68,9 +69,9 @@ export function Engine(props) {
             Display Chart
         </button>
 
-    <div>
+    {/* <div>
       # Samples: {agent?.onlineModel?.scoreHistory?.length * agent?.BATCH_SIZE}
-    </div>
+    </div> */}
           <div>
             {displayView &&
                 <View
