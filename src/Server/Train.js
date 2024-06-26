@@ -19,7 +19,7 @@ await sleep(5000)
 // console.debug(agent.onlineModel.model)
 
 // console.debug(agent?.onlineModel)
-const BATCHES_PER_SESSION = 1000
+const BATCHES_PER_SESSION = 100
 async function train(session, numSessions){
     let action = 0
     let highScore = 0
@@ -76,13 +76,14 @@ async function train(session, numSessions){
     // audio.currentTime = 0
 }
 const startTime = performance.now()
-for(let i=0; i<10; i++){
+const numBatches = 30
+for(let i=0; i<numBatches; i++){
     console.log("----------------------------------------------------------")
     console.log("Session: ", i+1)
     console.log("----------------------------------------------------------")
-    await train(i, 10)
+    await train(i, numBatches)
 }
 const endTime = performance.now()
 const minutes = parseInt((endTime-startTime)/60000, 10)
 const seconds = (((endTime-startTime)%60000)/1000).toFixed(3)
-console.log(10*BATCHES_PER_SESSION*agent?.BATCH_SIZE, " samples in ", minutes, ":", seconds, ".")
+console.log(numBatches*BATCHES_PER_SESSION*agent?.BATCH_SIZE, " samples in ", minutes, ":", seconds, ".")

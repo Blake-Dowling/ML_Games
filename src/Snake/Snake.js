@@ -18,7 +18,7 @@ export class Snake {
         this.state = null
         this.newState = true
 
-        this.modelParams = [9, 3, 'snake-model-2']
+        this.modelParams = [7, 3, 'snake-model-2']
         this.initGame()
     }
     initGame(){
@@ -114,22 +114,35 @@ export class Snake {
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
 
         const collision = this.#checkCollision()
+
         // //Remove player from board after init for following calculations
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
-        // //New state
+
         const dangerArray = this.#getDangerArray()
         const foodDirectionArray = this.#getFoodDirectionArray()
-        //Reward
-        this.reward = 0
-        this.reward += ate * 10
-        this.score += (10 * ate)
-        this.reward -= 5 * (collision + timeout)
-        //Done
-        this.done = Number(collision || timeout)
+        // const prevState = this.state
         //State
-        this.state = [this.direction].concat([this.snakePixels.length]).concat(dangerArray).concat(foodDirectionArray)
-        // console.debug(foodDirectionArray)
+        this.state = dangerArray.concat(foodDirectionArray)
+        // //New state
+        // if(this.state !== prevState){
 
+            //Reward
+            // console.debug(dangerArray)
+            this.score += (10 * ate)
+            this.reward = 0
+            this.reward += ate * 10//(this.score**2)
+            this.reward -= 10 * (collision + timeout)
+            //Done
+            // console.debug(collision || timeout)
+            this.done = Boolean(collision || timeout)
+
+            // this.state = [this.direction].concat([this.snakePixels.length]).concat(dangerArray).concat(foodDirectionArray)
+
+            // console.debug(foodDirectionArray)
+            // this.newState = true
+        // }else{
+            // this.newState = false
+        // }
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, [...this.snakePixels, this.food])
 
         return this

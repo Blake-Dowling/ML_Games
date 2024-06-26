@@ -144,11 +144,13 @@ export class tfModel{
     async trainModel(input){
         //existing q values to fill in output tensor aside from newly trained actions
         const onlineOutput = await this.predictModel(input.states)
+        // console.debug(onlineOutput)
         //Current highest q value for each (next) state
         const maxOnlineQValues = tf.max(onlineOutput, 1).arraySync()
         // console.log(maxOnlineQValues)
         for(let i=0; i<input.states.length-1; i++){
-            // console.log(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
+            console.debug("----------------------------------------")
+            console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
             if(input.done[i] !== true){
                 onlineOutput[i][input.actions[i]] = input.rewards[i] + maxOnlineQValues[i+1]
             }
@@ -157,6 +159,12 @@ export class tfModel{
                     onlineOutput[i][j] = input.rewards[i]
                 }
             }
+            console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
+            // if(input.states[i][2] === 1 && input.actions[i] === 2){
+            //     console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
+            //     console.debug(input.done[i+1]) //should be true
+
+            // }
         }
 
         const tfInput = tf.tensor(input.states)

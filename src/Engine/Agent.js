@@ -36,7 +36,9 @@ export class Agent {
     let prediction = await this.onlineModel?.predictModel([state])
 
     prediction = tf.argMax(tf.tensor(prediction[0]), 0).arraySync()
+    // console.debug("----------------------------")
     // console.debug(state)
+    // console.debug(prediction)
     // console.debug(states[states.length-1], actions[actions.length-1], rewards[rewards.length-1], done[done.length-1])
     return prediction
 
@@ -65,7 +67,7 @@ export class Agent {
           'rewards': this.rewards,
           'done': this.done
         }
-        // console.debug(input)
+        console.debug(input)
         this.states = []
         this.actions = []
         this.rewards = []
