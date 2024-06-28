@@ -10,8 +10,8 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-let game = new Tetris()
-// let game = new Snake()
+// let game = new Tetris()
+let game = new Snake()
 game.initGame()
 const agent = new Agent(game.modelParams)
 await sleep(5000)
@@ -22,7 +22,7 @@ await sleep(5000)
 // console.debug(agent?.onlineModel)
 const BATCHES_PER_SESSION = 1000
 async function train(session, numSessions){
-    let action = 0
+
     let highScore = 0
     let avgHighScore = 0
     let loss = undefined
@@ -30,20 +30,32 @@ async function train(session, numSessions){
 
 
     let numSamples = 0
-    while(numSamples<agent?.BATCH_SIZE*BATCHES_PER_SESSION){
-        
-        game?.getState()
-        if(game?.newState){
 
-            action = await agent?.getPrediction(game?.state)
-            game.action = action
-            // console.debug(game.state)
-            agent?.pushDataPoint(game?.state, action, game?.reward, game?.done)
-            game.newState = false
+
+    while(numSamples<agent?.BATCH_SIZE*BATCHES_PER_SESSION){
+
+        const state = game?.getState()
+
+        const action = await agent?.getPrediction(state)
+
+        game?.move(action)
+        let result = game?.getResult()
+
+        while(!result){
+            game?.move(action)
+            result = game?.getResult()
         }
-        game?.move()
-        highScore = Math.max(game?.score, highScore)
+
+        const score = result?.score
+        const reward = result?.reward
+        const done = result?.done
+
+        agent?.pushDataPoint(state, action, reward, done)
+
+        highScore = Math.max(score, highScore)
         
+
+
         if(agent?.states.length >= agent?.BATCH_SIZE+1){
             console.log("----------------------------------------------------------")
             console.log("Batch: ", (session*BATCHES_PER_SESSION)+((numSamples/agent?.BATCH_SIZE)+1), "/", (numSessions)*(BATCHES_PER_SESSION))

@@ -159,8 +159,10 @@ export class tfModel{
                     onlineOutput[i][j] = input.rewards[i]
                 }
             }
-            console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
-
+            // console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
+            // if(i > 0 && input.rewards[i] > 1){
+            //     console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
+            // }
             // if(i > 0 && input.done[i]){
             //     console.debug(input.states[i-1], input.actions[i-1], input.rewards[i-1], input.done[i-1], onlineOutput[i-1])
             // }

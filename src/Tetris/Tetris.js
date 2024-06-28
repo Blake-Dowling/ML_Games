@@ -2,107 +2,84 @@
 
 import { Board, Pixel, TetrisBlock } from '../Engine/Objects.js'
 
+class Result {
+    constructor(score, reward, done){
+        this.score = score
+        this.reward = reward
+        this.done = done
+    }
+}
 // ******************************************************
 // ****************** Main Game Component ******************
 // ******************************************************
 export class Tetris {
     constructor(){
-        this.reward = 0
-        this.done = false
-        this.state = null
+
         this.WIDTH = 6
         this.HEIGHT = 10
-        this.modelParams = [this.WIDTH+3, 4*this.WIDTH, 'tetris-model-2']
+        this.modelParams = [this.WIDTH+3, 4*this.WIDTH, 'tetris-model-5']
         this.initGame()
     }
     initGame(){
-        this.newState = true
-        this.action = 0
-        this.blockStopped = false
-        this.completeRows = new Set()
-        this.fullColumn = false
+
         this.player = this.#newBlock()
         this.restingPixels = []
         this.workingBoard = new Board(this.WIDTH, this.HEIGHT, this.player.pixels)
         this.score = 0
         // props.setScore(0)
     }
-    move(){
-        // console.debug(this.action)
-        const blockWasStopped = this.blockStopped
-        
-        if(this.blockStopped){
-            this.#handleBlockStopped()
-            this.blockStopped = false
-        }
-        if(this.completeRows.size > 0){
-            this.#handleCompleteRows()
-        }
-        if(this.fullColumn){
-            this.#handleFullColumn()
-            this.fullColumn = false
-        }
-        this.#movePlayer()
-        // console.debug(blockWasStopped)
-        if(!blockWasStopped){
-            this.#gravityPlayer()
+    move(action){
 
-        }
+        this.#movePlayer(action)
+
+        this.#gravityPlayer()
+
+
 
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, [...this.player.pixels, ...this.restingPixels])
+        return this.workingBoard
         // console.debug(this.workingBoard?.pixels)
     }
     getState(){
+        const heights = this.#getHeights()
+        const numHoles = this.#countHoles()
+        const bumpiness = this.#getBumpiness(heights)
+        return [this.player.type].concat(heights).concat(numHoles).concat(bumpiness)
 
-        //Player movement result
+    }
+    getResult(){
 
-        this.#checkBlockStopped()
-        // console.debug(this.player.pixels)
-        // console.debug(this.restingPixels)
-        // //New board result
-        // console.debug(this.blockStopped)
-        this.#checkCompleteRows()
-
-        this.#checkFullColumn()
-        
-        if(this.completeRows.size || this.fullColumn){
-            this.newState = true
+        const blockStopped = this.#checkBlockStopped()
+        if(!blockStopped){
+            return null
         }
+        let completeRows = new Set()
+        let fullColumn = false
 
+        this.#handleBlockStopped()
+        completeRows = this.#checkCompleteRows()
+        this.#handleCompleteRows(completeRows)
+        fullColumn = this.#checkFullColumn()
+        this.#handleFullColumn(fullColumn)
 
-        // //Remove player from board after init for following calculations
-        // console.debug(this.blockStopped)
-        // console.debug(this.newState)
-        // console.debug(this.completeRows)
-        // //New state
-        if(this.newState){
+        //Reward
+        let reward = 0
+        reward += (this.WIDTH) * (completeRows.size**2) + 1
 
+        this.score += (10 * completeRows.size)
 
-            this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.restingPixels)
-            const heights = this.#getHeights(this.workingBoard.board)
-            const numHoles = this.#countHoles(this.workingBoard.board)
-            const bumpiness = this.#getBumpiness(heights)
-            //Reward
-            this.reward = 0
-            this.reward += (this.WIDTH) * (this.completeRows.size**2) + 1
-            this.score += (10 * this.completeRows.size)
-            this.reward -= 5 * Number(this.fullColumn)
-            //Done
-            this.done = this.fullColumn===true
-            //State
-
-            this.state = [this.player.type].concat(heights).concat(numHoles).concat(bumpiness)
-            // console.debug(this.state, this.reward, this.done)
-        }
-        //Action
-        //Player movement
-
+        reward -= 5 * Number(fullColumn)
+        //Done
+        let done = fullColumn===true
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, [...this.player.pixels, ...this.restingPixels])
+        return new Result(this.score,
+                            reward,
+                            done
+        )
 
     }
     // ****************** Spawns new block ******************
     #newBlock(){
-        this.newState = true
         return new TetrisBlock(
             Math.floor(Math.random()*this.WIDTH), 
             0, 
@@ -119,18 +96,24 @@ export class Tetris {
         }
         this.player = new TetrisBlock(this.player.x, this.player.y, this.player.orientation, this.player.type)
     }
-    #movePlayer(){
-        this.player.orientation = parseInt(this.action / this.WIDTH)
-        this.player.x = parseInt(this.action % this.WIDTH)
+    #movePlayer(action){
+        this.player.orientation = parseInt(action / this.WIDTH)
+        this.player.x = parseInt(action % this.WIDTH)
         this.player = new TetrisBlock(this.player.x, this.player.y, this.player.orientation, this.player.type)
     }
 
     // ****************** Game mechanics ******************
+    /**
+     * @returns {boolean} whether active player block is grounded
+     */
     #checkBlockStopped(){
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.restingPixels)
-        this.blockStopped = this.workingBoard.grounded(this.player.pixels)
-        // console.debug(this.blockStopped)
+        return this.workingBoard.grounded(this.player.pixels)
     }
+    /**
+     * Converts player's pixels into resting pixels. Spawns new player.
+     * @returns {null} nothing
+     */
     #handleBlockStopped(){
         const newPixels = []
         for(let i=0; i<this.player.pixels.length; i++){
@@ -139,12 +122,12 @@ export class Tetris {
         this.restingPixels = this.restingPixels.concat(newPixels)
         this.player = this.#newBlock()
     }
+    /**
+     * @returns {Set} indices of rows that are full after block has stopped
+     */
     #checkCompleteRows(){
-        if(!this.blockStopped){
-            this.completeRows = new Set()
-            return
-        }
-        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, [...this.player.pixels, ...this.restingPixels])
+        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.restingPixels)
+        const completeRows = new Set()
         for(let i=this.workingBoard.board.length-1; i>=0; i--){
             let rowComplete = true
             for(let j=0; j<this.workingBoard.board[i].length; j++){
@@ -154,19 +137,26 @@ export class Tetris {
                 }
             }
             if(rowComplete){
-                this.completeRows.add(i)
+                completeRows.add(i)
             }
         }
+        return completeRows
     }
-    #handleCompleteRows(){
+    /**
+     * Removes completed lines from resting pixels.
+     * @returns {null} nothing
+     */
+    #handleCompleteRows(completeRows){
+        if(!completeRows || !completeRows.size){
+            return
+        }
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.restingPixels)
-
-        for(let i=0; this.completeRows.size && i<this.workingBoard.board.length; i++){
-            if(this.completeRows.has(i)){
+        for(let i=0; completeRows.size && i<this.workingBoard.board.length; i++){
+            if(completeRows.has(i)){
                 this.workingBoard.board.splice(i, 1)
                 const emptyRow = new Array(this.WIDTH).fill(0)
                 this.workingBoard.board = [emptyRow, ...this.workingBoard.board]
-                this.completeRows.delete(i)
+                // completeRows.delete(i)
             }
         }
         this.restingPixels = []
@@ -179,24 +169,22 @@ export class Tetris {
         }
     }
     #checkFullColumn(){
-        if(this.completeRows.size !== 0){
-            this.fullColumn = false
-            return
-        }
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.restingPixels)
         for(let i=0; i<this.workingBoard.board[0].length; i++){
             if(this.workingBoard.board[0][i] > 0){
-                this.fullColumn = true
-                return
+                return true
             }
         }
-        this.fullColumn = false
+        return false
     }
-    #handleFullColumn(){
-        this.initGame()
+    #handleFullColumn(fullColumn){
+        if(fullColumn){
+            this.initGame()
+        }
     }
     // ****************** State functions ******************
     #getHeights(){
+        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.restingPixels)
         let heights = []
         for(let i=0; i<this.WIDTH; i++){
             heights.push(0)
@@ -214,6 +202,7 @@ export class Tetris {
         return heights
     }
     #countHoles(){
+        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.restingPixels)
         let numHoles = 0
         for(let r=0; r<this.workingBoard?.board?.length-1; r++){
             for(let c=0; c<this.workingBoard?.board[r].length; c++){

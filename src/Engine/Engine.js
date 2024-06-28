@@ -13,38 +13,36 @@ export function Engine(props) {
     const [game, setGame] = useState(null) //stores state, reward, done
     const [agent, setAgent] = useState(null)
     const [score, setScore] = useState(0)
-    // const [highScore, setHighScore] = useState(0)
+
     const [ticks, setTicks] = useState(0)
+
     const [board, setBoard] = useState(null)
-    // const [action, setAction] = useState(0) //required due to asynchronous call
 
     const [displayView, setDisplayView] = useState(true)
     const [displayChart, setDisplayChart] = useState(true)
 
     async function tick(){
 
-      game?.getState()
+      const state = game?.getState()
 
-      // console.debug(game?.workingBoard.board)
-      if(game?.newState){
-        // console.debug("New")
-              // console.debug(game?.state)
-        game.action = await agent?.getPrediction(game?.state)
-        // console.debug(game?.action % 6)
-        game.newState = false
-      }
+      const action = await agent?.getPrediction(state)
 
-      game?.move()
-      
+      game?.move(action)
+
+      game?.getResult()
+
+      setBoard(game?.workingBoard)
+
+      setScore(game?.score)
 
     }
     useEffect(() => {
-      const newGame = new Tetris()
-      // const newGame = new Snake()
+      // const newGame = new Tetris()
+      const newGame = new Snake()
       newGame.initGame()
       setGame(newGame)
       const agent = new Agent(newGame.modelParams)
-      // agent.onlineModel.loadModel()
+
       console.debug("Agent loaded: ", agent)
       setAgent(agent)
       setBoard(newGame.workingBoard)
@@ -52,10 +50,10 @@ export function Engine(props) {
 
     //Event loop
     useEffect(() => {
-      // console.debug(game?.workingBoard?.pixels)
-      setBoard(game?.workingBoard)
-      setScore(game?.score)
+
+
         tick()
+
 
     }, [ticks])
 
