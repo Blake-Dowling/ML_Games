@@ -19,15 +19,35 @@ export class Snake {
         this.initGame()
     }
     initGame(){
-        this.snakePixels = this.#newPlayer()
-        this.food = new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 1)
-        this.workingBoard = new Board(this.WIDTH, this.HEIGHT, [...this.snakePixels, this.food])
         this.score = 0
+        this.clearGame()
+    }
+    clearGame(){
+        this.snakePixels = this.#newPlayer()
+        this.#newFood()
+        this.workingBoard = new Board(this.WIDTH, this.HEIGHT, [...this.snakePixels, this.food])
         this.ticksSinceAte = 0
     }
     // ****************** Spawns new block ******************
     #newPlayer(){
         return [new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 3)]
+    }
+    #newFood(){
+        let foodOnSnake = true
+        while(foodOnSnake){
+            this.food = new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 1)
+            let thisFoodOnSnake = false
+            for(let i=0; i<this.snakePixels.length; i++){
+                if(this.snakePixels[i].colliding(this.food)){
+                    thisFoodOnSnake = true
+                    break
+                }
+            }
+            if(thisFoodOnSnake === false){
+                foodOnSnake = false
+            }
+        }
+        this.ticksSinceAte = 0
     }
     #movePlayer(action){
         // actions: 0 left, 1 straight, 2 right
@@ -86,21 +106,10 @@ export class Snake {
     }
     #handleAte(ate){
         if(ate){
-            let foodOnSnake = true
-            while(foodOnSnake){
-                this.food = new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 1)
-                let thisFoodOnSnake = false
-                for(let i=0; i<this.snakePixels.length; i++){
-                    if(this.snakePixels[i].colliding(this.food)){
-                        thisFoodOnSnake = true
-                        break
-                    }
-                }
-                if(thisFoodOnSnake === false){
-                    foodOnSnake = false
-                }
+            if(this.snakePixels.length === (this.WIDTH * this.HEIGHT)){
+                this.clearGame()
             }
-            this.ticksSinceAte = 0
+            this.#newFood()
         }
         else{
             this.snakePixels.pop()
@@ -109,9 +118,9 @@ export class Snake {
     getState(){
 
         const dangerArray = this.#getDangerArray()
-        const foodDirectionArray = this.#getFoodDirectionArray()
+        const foodDistanceArray = this.#getFoodDistanceArray()
 
-        return dangerArray.concat(foodDirectionArray)
+        return dangerArray.concat(foodDistanceArray)
 
         // this.state = [this.direction].concat([this.snakePixels.length]).concat(dangerArray).concat(foodDirectionArray)
 
@@ -144,50 +153,58 @@ export class Snake {
         return new Result(this.score, reward, done)
 
     }
+    #dangerPixel(pixel){
+        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
+        return this.workingBoard.ob(pixel) || !(this.workingBoard.board[pixel.y][pixel.x] === 0)
+    }
     #getDangerArray(){
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
-        const pixelsSurroundingHead = [new Pixel(this.snakePixels[0].x,this.snakePixels[0].y - 1, 0), //L 
-                                        new Pixel(this.snakePixels[0].x + 1,this.snakePixels[0].y, 0), //S   //L
-                                        new Pixel(this.snakePixels[0].x,this.snakePixels[0].y + 1, 0), //R  //S
-                                        new Pixel(this.snakePixels[0].x - 1,this.snakePixels[0].y, 0)      //R
-
-        ]
-        for(let i=0; i<this.direction; i++){
-            pixelsSurroundingHead.push(pixelsSurroundingHead.shift())
-        }
-        const leftPixel = pixelsSurroundingHead[0]
-        const straightPixel = pixelsSurroundingHead[1]
-        const rightPixel = pixelsSurroundingHead[2]
-        let snakeLeft = false
-        let snakeStraight = false
-        let snakeRight = false
-        for(let i=0; i<this.snakePixels.length; i++)
-        {
-            if(leftPixel.colliding(this.snakePixels[i])){
-                snakeLeft = true
-            }
-            if(straightPixel.colliding(this.snakePixels[i])){
-                snakeStraight = true
-            }
-            if(rightPixel.colliding(this.snakePixels[i])){
-                snakeRight = true
-            }
-        }
-        const dangerLeft = Number(this.workingBoard.ob(leftPixel) || snakeLeft)
-        const dangerStraight = Number(this.workingBoard.ob(straightPixel) || snakeStraight)
-        const dangerRight = Number(this.workingBoard.ob(rightPixel) || snakeRight)
-        return [dangerLeft, dangerStraight, dangerRight]
-    }
-    #getFoodDirectionArray(){
         const head = this.snakePixels[0]
-        const foodDirectionArray = [Math.max(0, head.y - this.food?.y),
+        //L
+        let boardPointer = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y - 1, 0)
+        while(!this.#dangerPixel(boardPointer)){
+            boardPointer.y --
+        }
+        const dangerDistanceLeft = Math.max(0, head.y - boardPointer.y)
+        //S
+        boardPointer = new Pixel(this.snakePixels[0].x + 1, this.snakePixels[0].y, 0)
+        while(!this.#dangerPixel(boardPointer)){
+            boardPointer.x ++
+        }
+        const dangerDistanceStraight = Math.max(0, boardPointer.x - head.x)
+        //L
+        boardPointer = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y + 1, 0)
+        while(!this.#dangerPixel(boardPointer)){
+            boardPointer.y ++
+        }
+        const dangerDistanceRight = Math.max(0, boardPointer.y - head.y)
+        //B
+        boardPointer = new Pixel(this.snakePixels[0].x - 1, this.snakePixels[0].y, 0)
+        while(!this.#dangerPixel(boardPointer)){
+            boardPointer.x --
+        }
+        const dangerDistanceBehind = Math.max(0, head.x - boardPointer.x)
+
+        const dangerDistArray = [dangerDistanceLeft, dangerDistanceStraight, dangerDistanceRight, dangerDistanceBehind]
+
+        for(let i=0; i<this.direction; i++){
+            dangerDistArray.push(dangerDistArray.shift())
+        }
+        const leftDistance = dangerDistArray[0]
+        const straightDistance = dangerDistArray[1]
+        const rightDistance = dangerDistArray[2]
+        return [leftDistance, straightDistance, rightDistance]
+    }
+    #getFoodDistanceArray(){
+        const head = this.snakePixels[0]
+        const foodDistanceArray = [Math.max(0, head.y - this.food?.y),
                                     Math.max(0, this.food?.x - head.x),
                                     Math.max(0, this.food?.y - head.y),
                                     Math.max(0, head.x - this.food?.x),
         ]
         for(let i=0; i<this.direction; i++){
-            foodDirectionArray.push(foodDirectionArray.shift())
+            foodDistanceArray.push(foodDistanceArray.shift())
         }
-        return foodDirectionArray
+        return foodDistanceArray
     }
 }
