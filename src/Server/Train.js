@@ -10,16 +10,17 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// let game = new Tetris()
-let game = new Snake()
+let game = new Tetris()
+// let game = new Snake()
 game.initGame()
 const agent = new Agent(game.modelParams)
 await sleep(5000)
+
 // agent.onlineModel.resetModel()
 // console.debug(agent.onlineModel.model)
 
 // console.debug(agent?.onlineModel)
-const BATCHES_PER_SESSION = 100
+const BATCHES_PER_SESSION = 1000
 async function train(session, numSessions){
     let action = 0
     let highScore = 0
@@ -30,19 +31,19 @@ async function train(session, numSessions){
 
     let numSamples = 0
     while(numSamples<agent?.BATCH_SIZE*BATCHES_PER_SESSION){
-        // await sleep(200)
-        // console.debug(i, "-----------------------------")
-        game = game?.getState(action)
+        
+        game?.getState()
         if(game?.newState){
 
             action = await agent?.getPrediction(game?.state)
+            game.action = action
             // console.debug(game.state)
             agent?.pushDataPoint(game?.state, action, game?.reward, game?.done)
+            game.newState = false
         }
-    
-        let newScore = game?.score
-        highScore = Math.max(newScore, highScore)
-
+        game?.move()
+        highScore = Math.max(game?.score, highScore)
+        
         if(agent?.states.length >= agent?.BATCH_SIZE+1){
             console.log("----------------------------------------------------------")
             console.log("Batch: ", (session*BATCHES_PER_SESSION)+((numSamples/agent?.BATCH_SIZE)+1), "/", (numSessions)*(BATCHES_PER_SESSION))
@@ -56,6 +57,7 @@ async function train(session, numSessions){
             console.log("High Score: ", highScore)
             avgHighScore += highScore
             highScore = 0
+
             numSamples += agent?.BATCH_SIZE
         }
     
@@ -76,7 +78,7 @@ async function train(session, numSessions){
     // audio.currentTime = 0
 }
 const startTime = performance.now()
-const numBatches = 30
+const numBatches = 50
 for(let i=0; i<numBatches; i++){
     console.log("----------------------------------------------------------")
     console.log("Session: ", i+1)

@@ -9,10 +9,14 @@ export class Snake {
         this.snakePixels = []
         this.food = undefined
         this.grow = false
+        this.ate = false
+
         this.ticksSinceAte = 0
+        this.collisionOrTimeout = 0
         this.workingBoard = undefined
 
         this.score = 0
+        this.action = 0
         this.reward = 0
         this.done = false
         this.state = null
@@ -31,10 +35,10 @@ export class Snake {
     #newPlayer(){
         return [new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 3)]
     }
-    #movePlayer(action){
+    #movePlayer(){
 
         // actions: 0 left, 1 straight, 2 right
-        this.direction = (((this.direction + (parseInt(action) - 1)) % 4) + 4) % 4
+        this.direction = (((this.direction + (parseInt(this.action) - 1)) % 4) + 4) % 4
         const newHead = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y, this.snakePixels[0].val)
         switch(this.direction){
             case 0:
@@ -75,49 +79,59 @@ export class Snake {
                 selfCollision = true
             }
         }
-        const collision = Number(ob || selfCollision)
-        if(collision){
-            this.initGame()
+        if(ob || selfCollision){
+            this.collisionOrTimeout = Number(ob || selfCollision)
         }
-        return collision
     }
     #checkTimeout(){
-        let timeout = this.ticksSinceAte > (this.workingBoard?.width * this.workingBoard?.height) / 3
-        if(timeout){
+        this.collisionOrTimeout = Number(this.ticksSinceAte > (this.workingBoard?.width * this.workingBoard?.height))
+    }
+    #enforceCollisionOrTimeout(){
+        if(this.collisionOrTimeout){
             this.ticksSinceAte = 0
             this.initGame()
+            this.collisionOrTimeout = 0
         }
-        return Number(timeout)
     }
     #checkAte(){
-        const ate = this.snakePixels[0]?.colliding(this.food)
-        if(ate){
-            this.grow = true
-            this.food = new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 1)
-            this.ticksSinceAte = 0
-            // this.score += 10
-        }
-        this.workingBoard = new Board(this.WIDTH, this.HEIGHT, this.snakePixels)
-        return Number(ate)
+        this.ate = Number(this.snakePixels[0]?.colliding(this.food))
+
     }
-    getState(action){
+    #enforceAte(){
+        if(this.ate){
+            this.grow = true
+            let foodOnSnake = true
+            while(foodOnSnake){
+                this.food = new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 1)
+                let thisFoodOnSnake = false
+                for(let i=0; i<this.snakePixels.length; i++){
+                    if(this.snakePixels[i].colliding(this.food)){
+                        thisFoodOnSnake = true
+                        break
+                    }
+                }
+                if(thisFoodOnSnake === false){
+                    foodOnSnake = false
+                }
+            }
+            this.ticksSinceAte = 0
+            this.ate = 0
+        }
+    }
+    getState(){
         //Action
         //Player movement
-        this.#movePlayer(action)
+        this.#checkAte()
         this.ticksSinceAte += 1
-        const timeout = this.#checkTimeout()
+        this.#checkTimeout()
         //Player movement result
-        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
-        const ate = this.#checkAte()
+
 
         // //New board result
-        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
 
-        const collision = this.#checkCollision()
+        this.#checkCollision()
 
         // //Remove player from board after init for following calculations
-        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
-
         const dangerArray = this.#getDangerArray()
         const foodDirectionArray = this.#getFoodDirectionArray()
         // const prevState = this.state
@@ -128,13 +142,13 @@ export class Snake {
 
             //Reward
             // console.debug(dangerArray)
-            this.score += (10 * ate)
+            this.score += (10 * this.ate)
             this.reward = 0
-            this.reward += ate * 10//(this.score**2)
-            this.reward -= 10 * (collision + timeout)
+            this.reward += this.ate * 10//(this.score**2)
+            this.reward -= 10 * (this.collisionOrTimeout)
             //Done
             // console.debug(collision || timeout)
-            this.done = Boolean(collision || timeout)
+            this.done = Boolean(this.collisionOrTimeout)
 
             // this.state = [this.direction].concat([this.snakePixels.length]).concat(dangerArray).concat(foodDirectionArray)
 
@@ -145,9 +159,19 @@ export class Snake {
         // }
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, [...this.snakePixels, this.food])
 
-        return this
+    }
+    move(){
+        this.#enforceAte()
+        if(this.collisionOrTimeout){
+            this.#enforceCollisionOrTimeout()
+        }
+        else{
+            this.#movePlayer()
+        }
+        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, [...this.snakePixels, this.food])
     }
     #getDangerArray(){
+        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
         const pixelsSurroundingHead = [new Pixel(this.snakePixels[0].x,this.snakePixels[0].y - 1, 0), //L 
                                         new Pixel(this.snakePixels[0].x + 1,this.snakePixels[0].y, 0), //S   //L
                                         new Pixel(this.snakePixels[0].x,this.snakePixels[0].y + 1, 0), //R  //S
@@ -182,10 +206,10 @@ export class Snake {
     }
     #getFoodDirectionArray(){
         const head = this.snakePixels[0]
-        const foodDirectionArray = [Number(this.food?.y < head.y),
-                                    Number(this.food?.x > head.x),
-                                    Number(this.food?.y > head.y),
-                                    Number(this.food?.x < head.x),
+        const foodDirectionArray = [Math.max(0, head.y - this.food?.y),
+                                    Math.max(0, this.food?.x - head.x),
+                                    Math.max(0, this.food?.y - head.y),
+                                    Math.max(0, head.x - this.food?.x),
         ]
         for(let i=0; i<this.direction; i++){
             foodDirectionArray.push(foodDirectionArray.shift())

@@ -67,7 +67,7 @@ export class Agent {
           'rewards': this.rewards,
           'done': this.done
         }
-        console.debug(input)
+        // console.debug(input)
         this.states = []
         this.actions = []
         this.rewards = []

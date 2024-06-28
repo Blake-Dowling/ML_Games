@@ -149,8 +149,8 @@ export class tfModel{
         const maxOnlineQValues = tf.max(onlineOutput, 1).arraySync()
         // console.log(maxOnlineQValues)
         for(let i=0; i<input.states.length-1; i++){
-            console.debug("----------------------------------------")
-            console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
+            // console.debug("----------------------------------------")
+            // console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
             if(input.done[i] !== true){
                 onlineOutput[i][input.actions[i]] = input.rewards[i] + maxOnlineQValues[i+1]
             }
@@ -160,10 +160,9 @@ export class tfModel{
                 }
             }
             console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
-            // if(input.states[i][2] === 1 && input.actions[i] === 2){
-            //     console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
-            //     console.debug(input.done[i+1]) //should be true
 
+            // if(i > 0 && input.done[i]){
+            //     console.debug(input.states[i-1], input.actions[i-1], input.rewards[i-1], input.done[i-1], onlineOutput[i-1])
             // }
         }
 

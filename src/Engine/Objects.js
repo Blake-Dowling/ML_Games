@@ -54,7 +54,7 @@ export class Board{
             if(this.ob(below)){
                 return true
             }
-            else if(this.board[below.y][below.x] == 1){
+            else if(this.board[below.y][below.x] > 0){
                 return true
             }
         }
