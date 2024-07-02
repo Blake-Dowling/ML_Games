@@ -10,8 +10,8 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// let game = new Tetris()
-let game = new Snake()
+let game = new Tetris()
+// let game = new Snake()
 game.initGame()
 const agent = new Agent(game.modelParams)
 await sleep(5000)
