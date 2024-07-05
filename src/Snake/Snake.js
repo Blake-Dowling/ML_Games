@@ -15,7 +15,7 @@ export class Snake {
         this.snakePixels = []
         this.food = undefined
 
-        this.modelParams = [10, 3, 'snake-model-2']
+        this.modelParams = [12, 3, 'snake-model'] //2
         this.initGame()
     }
     initGame(){
@@ -51,8 +51,12 @@ export class Snake {
     }
     #movePlayer(action){
         // actions: 0 left, 1 straight, 2 right
+        // console.debug("--------------------------------------------")
+        // console.debug(this.direction, action)
         this.direction = (((this.direction + (parseInt(action) - 1)) % 4) + 4) % 4
+        // console.debug(this.direction)
         const newHead = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y, this.snakePixels[0].val)
+        // console.debug(newHead)
         switch(this.direction){
             case 0:
                 newHead.x += 1
@@ -70,6 +74,7 @@ export class Snake {
                 break
         }
         this.snakePixels.unshift(newHead)
+        // console.debug(newHead)
     }
     #checkCollision(){
         const ob = this.workingBoard.ob(this.snakePixels[0])
@@ -113,8 +118,11 @@ export class Snake {
         const wallDistanceArray = this.#getWallDistanceArray()
         const selfDistanceArray = this.#getSelfDistanceArray()
         const foodDistanceArray = this.#getFoodDistanceArray()
-
-        return wallDistanceArray.concat(selfDistanceArray).concat(foodDistanceArray)
+        const relativeTailDirection = this.#getRelativeTailDirection()
+        // console.debug(this.snakePixels)
+        // console.debug(this.direction, this.snakePixels[0], this.snakePixels[this.snakePixels.length-1])
+        // console.debug(relativeTailDirection)
+        return [this.snakePixels.length].concat([relativeTailDirection]).concat(wallDistanceArray).concat(selfDistanceArray).concat(foodDistanceArray)
 
         // this.state = [this.direction].concat([this.snakePixels.length]).concat(dangerArray).concat(foodDirectionArray)
 
@@ -233,5 +241,18 @@ export class Snake {
             foodDistanceArray.push(foodDistanceArray.shift())
         }
         return foodDistanceArray
+    }
+    #getRelativeTailDirection(){
+        let direction = 2
+        if(this.snakePixels.length > 1){
+            const tailNext = this.snakePixels[this.snakePixels.length-2]
+            const tail = this.snakePixels[this.snakePixels.length-1]
+            direction = tail.x > tailNext.x ? 0 :
+                        tail.y > tailNext.y ? 1 :
+                        tail.x < tailNext.x ? 2 :
+                        tail.y < tailNext.y ? 3 :
+                        2
+        }
+        return (((direction - this.direction) % 4) + 4) % 4
     }
 }

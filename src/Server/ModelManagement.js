@@ -155,9 +155,10 @@ export class tfModel{
                 onlineOutput[i][input.actions[i]] = input.rewards[i] + maxOnlineQValues[i+1]
             }
             else if(input.done[i] === true){
-                for(let j=0; j<onlineOutput[i].length; j++){
-                    onlineOutput[i][j] = input.rewards[i]
-                }
+                // for(let j=0; j<onlineOutput[i].length; j++){
+                //     onlineOutput[i][j] = input.rewards[i]
+                // }
+                onlineOutput[i][input.actions[i]] = input.rewards[i]
             }
             // console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
             // if(i > 0 && input.rewards[i] > 1){

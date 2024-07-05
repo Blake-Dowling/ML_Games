@@ -28,6 +28,7 @@ export function Engine(props) {
       const action = await agent?.getPrediction(state)
 
       game?.move(action)
+      console.debug(game?.snakePixels)
       setBoard(game?.workingBoard)
       game?.getResult()
 
@@ -37,8 +38,8 @@ export function Engine(props) {
 
     }
     useEffect(() => {
-      const newGame = new Tetris()
-      // const newGame = new Snake()
+      // const newGame = new Tetris()
+      const newGame = new Snake()
       newGame.initGame()
       setGame(newGame)
       const agent = new Agent(newGame.modelParams)
