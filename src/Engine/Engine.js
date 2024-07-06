@@ -28,10 +28,10 @@ export function Engine(props) {
       const action = await agent?.getPrediction(state)
 
       game?.move(action)
-      console.debug(game?.snakePixels)
-      setBoard(game?.workingBoard)
-      game?.getResult()
+      // console.debug(game?.snakePixels)
 
+      game?.getResult()
+      setBoard(game?.workingBoard)
 
 
       setScore(game?.score)

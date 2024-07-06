@@ -51,6 +51,7 @@ export class Tetris {
 
         const blockStopped = this.#checkBlockStopped()
         if(!blockStopped){
+            this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, [...this.player.pixels, ...this.restingPixels])
             return null
         }
         let completeRows = new Set()

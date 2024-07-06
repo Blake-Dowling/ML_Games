@@ -15,7 +15,7 @@ export class Snake {
         this.snakePixels = []
         this.food = undefined
 
-        this.modelParams = [12, 3, 'snake-model'] //2
+        this.modelParams = [12, 3, 'snake-model-2'] //1
         this.initGame()
     }
     initGame(){
@@ -74,7 +74,6 @@ export class Snake {
                 break
         }
         this.snakePixels.unshift(newHead)
-        // console.debug(newHead)
     }
     #checkCollision(){
         const ob = this.workingBoard.ob(this.snakePixels[0])
@@ -115,8 +114,10 @@ export class Snake {
     }
     getState(){
 
-        const wallDistanceArray = this.#getWallDistanceArray()
-        const selfDistanceArray = this.#getSelfDistanceArray()
+        // const wallDistanceArray = this.#getWallDistanceArray()
+        // const selfDistanceArray = this.#getSelfDistanceArray()
+        const wallDistanceArray = this.#getDangerArray(this.#pixelOnSnake.bind(this))
+        const selfDistanceArray = this.#getDangerArray(this.workingBoard?.ob.bind(this.workingBoard))
         const foodDistanceArray = this.#getFoodDistanceArray()
         const relativeTailDirection = this.#getRelativeTailDirection()
         // console.debug(this.snakePixels)
@@ -158,30 +159,30 @@ export class Snake {
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
         return this.workingBoard.ob(pixel) || !(this.workingBoard.board[pixel.y][pixel.x] === 0)
     }
-    #getSelfDistanceArray(){
+    #getDangerArray(dangerFunction){
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
         const head = this.snakePixels[0]
         //L
         let boardPointer = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y - 1, 0)
-        while(!this.#pixelOnSnake(boardPointer)){
+        while(!dangerFunction(boardPointer)){
             boardPointer.y --
         }
         const dangerDistanceLeft = Math.max(0, head.y - boardPointer.y)
         //S
         boardPointer = new Pixel(this.snakePixels[0].x + 1, this.snakePixels[0].y, 0)
-        while(!this.#pixelOnSnake(boardPointer)){
+        while(!dangerFunction(boardPointer)){
             boardPointer.x ++
         }
         const dangerDistanceStraight = Math.max(0, boardPointer.x - head.x)
         //L
         boardPointer = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y + 1, 0)
-        while(!this.#pixelOnSnake(boardPointer)){
+        while(!dangerFunction(boardPointer)){
             boardPointer.y ++
         }
         const dangerDistanceRight = Math.max(0, boardPointer.y - head.y)
         //B
         boardPointer = new Pixel(this.snakePixels[0].x - 1, this.snakePixels[0].y, 0)
-        while(!this.#pixelOnSnake(boardPointer)){
+        while(!dangerFunction(boardPointer)){
             boardPointer.x --
         }
         const dangerDistanceBehind = Math.max(0, head.x - boardPointer.x)
@@ -192,6 +193,7 @@ export class Snake {
         const leftDistance = dangerDistArray[0]
         const straightDistance = dangerDistArray[1]
         const rightDistance = dangerDistArray[2]
+        console.debug([leftDistance, straightDistance, rightDistance])
         return [leftDistance, straightDistance, rightDistance]
     }
     #getWallDistanceArray(){
