@@ -38,8 +38,8 @@ export function Engine(props) {
 
     }
     useEffect(() => {
-      // const newGame = new Tetris()
-      const newGame = new Snake()
+      const newGame = new Tetris()
+      // const newGame = new Snake()
       newGame.initGame()
       setGame(newGame)
       const agent = new Agent(newGame.modelParams)

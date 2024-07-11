@@ -15,7 +15,7 @@ export class Snake {
         this.snakePixels = []
         this.food = undefined
 
-        this.modelParams = [12, 3, 'snake-model-2'] //1
+        this.modelParams = [11, 3, 'snake-model-7'] //7
         this.initGame()
     }
     initGame(){
@@ -24,6 +24,7 @@ export class Snake {
     }
     clearGame(){
         this.snakePixels = this.#newPlayer()
+        this.turns = [0]
         this.#newFood()
         this.workingBoard = new Board(this.WIDTH, this.HEIGHT, [...this.snakePixels, this.food])
         this.ticksSinceAte = 0
@@ -54,6 +55,8 @@ export class Snake {
         // console.debug("--------------------------------------------")
         // console.debug(this.direction, action)
         this.direction = (((this.direction + (parseInt(action) - 1)) % 4) + 4) % 4
+        this.turns.unshift(parseInt(action) - 1)
+
         // console.debug(this.direction)
         const newHead = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y, this.snakePixels[0].val)
         // console.debug(newHead)
@@ -110,6 +113,7 @@ export class Snake {
         }
         else{
             this.snakePixels.pop()
+            this.turns.pop()
         }
     }
     getState(){
@@ -118,13 +122,19 @@ export class Snake {
         // const selfDistanceArray = this.#getSelfDistanceArray()
         const wallDistanceArray = this.#getDangerArray(this.#pixelOnSnake.bind(this))
         const selfDistanceArray = this.#getDangerArray(this.workingBoard?.ob.bind(this.workingBoard))
-        const foodDistanceArray = this.#getFoodDistanceArray()
+        const foodDistanceArray = this.#getPixelDistanceArray(this.food)
+        const tailDistanceArray = this.#getPixelDistanceArray(this.snakePixels[this.snakePixels.length-1])
         const relativeTailDirection = this.#getRelativeTailDirection()
+        const bend = this.#getBend()
+        // console.debug(bend)
         // console.debug(this.snakePixels)
         // console.debug(this.direction, this.snakePixels[0], this.snakePixels[this.snakePixels.length-1])
         // console.debug(relativeTailDirection)
-        return [this.snakePixels.length].concat([relativeTailDirection]).concat(wallDistanceArray).concat(selfDistanceArray).concat(foodDistanceArray)
-
+        // return [this.snakePixels.length].concat(tailDistanceArray).concat([relativeTailDirection]).concat(wallDistanceArray).concat(selfDistanceArray).concat(foodDistanceArray)
+        return [bend].concat(wallDistanceArray).concat(selfDistanceArray).concat(foodDistanceArray) //7
+        // this.workingBoard = new Board(this.WIDTH, this.HEIGHT, [...this.snakePixels, this.food])
+        // console.debug(this.workingBoard?.board?.flat())
+        // return [this.direction].concat(this.workingBoard?.board?.flat()) //8
         // this.state = [this.direction].concat([this.snakePixels.length]).concat(dangerArray).concat(foodDirectionArray)
 
     }
@@ -159,90 +169,79 @@ export class Snake {
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
         return this.workingBoard.ob(pixel) || !(this.workingBoard.board[pixel.y][pixel.x] === 0)
     }
+    #getDistanceDirection(dangerFunction, direction){
+        const boardPointer = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y - 1, 0)
+        let distance = 0
+        while(!dangerFunction(boardPointer)){
+            distance ++
+            switch(direction){
+                case 'B':
+                    boardPointer.x --
+                    break
+                case 'LB':
+                    boardPointer.x --
+                    boardPointer.y --
+                    break
+                case 'L':
+                    boardPointer.y --
+                    break
+                case 'LF':
+                    boardPointer.x ++
+                    boardPointer.y --
+                    break
+                case 'F':
+                    boardPointer.x ++
+                    break
+                case 'RF':
+                    boardPointer.x ++
+                    boardPointer.y ++
+                    break
+                case 'R':
+                    boardPointer.y ++
+                    break
+                case 'RB':
+                    boardPointer.x --
+                    boardPointer.y ++
+                    break
+            }
+        }
+        return distance
+    }
     #getDangerArray(dangerFunction){
         this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
-        const head = this.snakePixels[0]
-        //L
-        let boardPointer = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y - 1, 0)
-        while(!dangerFunction(boardPointer)){
-            boardPointer.y --
-        }
-        const dangerDistanceLeft = Math.max(0, head.y - boardPointer.y)
-        //S
-        boardPointer = new Pixel(this.snakePixels[0].x + 1, this.snakePixels[0].y, 0)
-        while(!dangerFunction(boardPointer)){
-            boardPointer.x ++
-        }
-        const dangerDistanceStraight = Math.max(0, boardPointer.x - head.x)
-        //L
-        boardPointer = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y + 1, 0)
-        while(!dangerFunction(boardPointer)){
-            boardPointer.y ++
-        }
-        const dangerDistanceRight = Math.max(0, boardPointer.y - head.y)
-        //B
-        boardPointer = new Pixel(this.snakePixels[0].x - 1, this.snakePixels[0].y, 0)
-        while(!dangerFunction(boardPointer)){
-            boardPointer.x --
-        }
-        const dangerDistanceBehind = Math.max(0, head.x - boardPointer.x)
-        const dangerDistArray = [dangerDistanceLeft, dangerDistanceStraight, dangerDistanceRight, dangerDistanceBehind]
+
+        const behind = this.#getDistanceDirection(dangerFunction.bind(this), 'B')
+        // const leftBehind = this.#getDistanceDirection(dangerFunction.bind(this), 'LB')
+        const left = this.#getDistanceDirection(dangerFunction.bind(this), 'L')
+        // const leftForward = this.#getDistanceDirection(dangerFunction.bind(this), 'LF')
+        const forward = this.#getDistanceDirection(dangerFunction.bind(this), 'F')
+        // const rightForward = this.#getDistanceDirection(dangerFunction.bind(this), 'RF')
+        const right = this.#getDistanceDirection(dangerFunction.bind(this), 'R')
+        // const rightBehind = this.#getDistanceDirection(dangerFunction.bind(this), 'RB')
+
+
+        // const distanceArray = [behind, leftBehind, left, leftForward, forward, rightForward, right, rightBehind]
+        const distanceArray = [behind, left, forward, right]
         for(let i=0; i<this.direction; i++){
-            dangerDistArray.push(dangerDistArray.shift())
+            distanceArray.push(distanceArray.shift())
+            // distanceArray.push(distanceArray.shift())
         }
-        const leftDistance = dangerDistArray[0]
-        const straightDistance = dangerDistArray[1]
-        const rightDistance = dangerDistArray[2]
-        console.debug([leftDistance, straightDistance, rightDistance])
-        return [leftDistance, straightDistance, rightDistance]
+        // const 
+        // return [distanceArray[1], distanceArray[2], distanceArray[3], distanceArray[4], distanceArray[5], distanceArray[6], distanceArray[7]]
+        return [distanceArray[1], distanceArray[2], distanceArray[3]]
     }
-    #getWallDistanceArray(){
-        this.workingBoard = new Board(this.workingBoard.width, this.workingBoard.height, this.snakePixels)
+
+    #getPixelDistanceArray(pixel){
         const head = this.snakePixels[0]
-        //L
-        let boardPointer = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y - 1, 0)
-        while(!this.workingBoard.ob(boardPointer)){
-            boardPointer.y --
-        }
-        const dangerDistanceLeft = Math.max(0, head.y - boardPointer.y)
-        //S
-        boardPointer = new Pixel(this.snakePixels[0].x + 1, this.snakePixels[0].y, 0)
-        while(!this.workingBoard.ob(boardPointer)){
-            boardPointer.x ++
-        }
-        const dangerDistanceStraight = Math.max(0, boardPointer.x - head.x)
-        //L
-        boardPointer = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y + 1, 0)
-        while(!this.workingBoard.ob(boardPointer)){
-            boardPointer.y ++
-        }
-        const dangerDistanceRight = Math.max(0, boardPointer.y - head.y)
-        //B
-        boardPointer = new Pixel(this.snakePixels[0].x - 1, this.snakePixels[0].y, 0)
-        while(!this.workingBoard.ob(boardPointer)){
-            boardPointer.x --
-        }
-        const dangerDistanceBehind = Math.max(0, head.x - boardPointer.x)
-        const dangerDistArray = [dangerDistanceLeft, dangerDistanceStraight, dangerDistanceRight, dangerDistanceBehind]
-        for(let i=0; i<this.direction; i++){
-            dangerDistArray.push(dangerDistArray.shift())
-        }
-        const leftDistance = dangerDistArray[0]
-        const straightDistance = dangerDistArray[1]
-        const rightDistance = dangerDistArray[2]
-        return [leftDistance, straightDistance, rightDistance]
-    }
-    #getFoodDistanceArray(){
-        const head = this.snakePixels[0]
-        const foodDistanceArray = [Math.max(0, head.y - this.food?.y),
-                                    Math.max(0, this.food?.x - head.x),
-                                    Math.max(0, this.food?.y - head.y),
-                                    Math.max(0, head.x - this.food?.x),
+        const distanceArray = [Math.max(0, head.y - pixel?.y),
+                                    Math.max(0, pixel?.x - head.x),
+                                    Math.max(0, pixel?.y - head.y),
+                                    Math.max(0, head.x - pixel?.x),
         ]
         for(let i=0; i<this.direction; i++){
-            foodDistanceArray.push(foodDistanceArray.shift())
+            distanceArray.push(distanceArray.shift())
         }
-        return foodDistanceArray
+        return distanceArray
     }
     #getRelativeTailDirection(){
         let direction = 2
@@ -256,5 +255,12 @@ export class Snake {
                         2
         }
         return (((direction - this.direction) % 4) + 4) % 4
+    }
+    #getBend(){
+        let bend = 0
+        for(let i=0; i<this.turns.length; i++){
+            bend += this.turns[i]
+        }
+        return bend
     }
 }
