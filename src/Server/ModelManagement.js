@@ -217,10 +217,11 @@ export class GeneticArray extends Model{
     }
 
     init(){
-        this.model = [] 
+        const model = [] 
         for(let i=0; i<this.populationSize; i++){
-            this.model.push(new Sequence(this.outputSize, this.sequenceLength))
+            model.push(new Sequence(this.outputShape, this.sequenceLength))
         }
+        this.model = model
     }
     async loadModel(){
         super.loadModel()
@@ -277,15 +278,15 @@ export class GeneticArray extends Model{
 
 }
 class Sequence {
-    constructor(outputSize, sequenceLength){
-        this.outputSize = outputSize
+    constructor(outputShape, sequenceLength){
+        this.outputShape = outputShape
         this.sequenceLength = sequenceLength
         this.fitness = 0
 
         this.sequence = this.newRandom()
     }
     clone(){
-        const newSequence = new Sequence(this.outputSize, this.sequenceLength)
+        const newSequence = new Sequence(this.outputShape, this.sequenceLength)
         newSequence.fitness = this.fitness
         newSequence.sequence = this.sequence
         return newSequence
@@ -293,14 +294,14 @@ class Sequence {
     mutate(){
         for(let i=0; i<this.sequence.length; i++){
             if(Math.floor(Math.random()*5) < 1){
-                this.sequence[i] = Math.floor(Math.random()*this.outputSize)
+                this.sequence[i] = Math.floor(Math.random()*this.outputShape)
             }
         }
     }
     newRandom(){
         const newSequence = Array(this.sequenceLength).fill(0)
         for(let i=0; i<newSequence.length; i++){
-            newSequence[i] = Math.floor(Math.random()*this.outputSize)
+            newSequence[i] = Math.floor(Math.random()*this.outputShape)
         }
         return newSequence
     }

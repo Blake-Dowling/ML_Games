@@ -28,6 +28,9 @@ export class Tetris {
         this.score = 0
         // props.setScore(0)
     }
+    getWorkingBoard(){
+        return new Board(this.workingBoard.width, this.workingBoard.height, [...this.player.pixels, ...this.restingPixels])
+    }
     move(action){
 
         this.#movePlayer(action)

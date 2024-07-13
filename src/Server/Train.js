@@ -56,13 +56,12 @@ async function train(session, numSessions){
         if(agent?.states.length >= agent?.BATCH_SIZE+1){
             console.log("----------------------------------------------------------")
             console.log("Batch: ", (session*BATCHES_PER_SESSION)+((numSamples/agent?.BATCH_SIZE)+1), "/", (numSessions)*(BATCHES_PER_SESSION))
-            const start = performance.now()
+
             const history = await agent?.trainModel(highScore)
-            const end = performance.now()
+
             loss = parseFloat(history.history.loss[0].toFixed(3))
             accuracy = parseFloat(history.history.acc[0].toFixed(3))
 
-            console.log( ((end-start)/1000).toFixed(3), "s.")
             console.log("High Score: ", highScore)
             avgHighScore += highScore
             highScore = 0
@@ -82,9 +81,7 @@ async function train(session, numSessions){
     await sleep(200)
     await agent?.onlineModel?.saveModel()
 
-    // audio.play()
-    // audio.pause()
-    // audio.currentTime = 0
+
 }
 const startTime = performance.now()
 const numBatches = 50

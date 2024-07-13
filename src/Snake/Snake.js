@@ -29,6 +29,9 @@ export class Snake {
         this.workingBoard = new Board(this.WIDTH, this.HEIGHT, [...this.snakePixels, this.food])
         this.ticksSinceAte = 0
     }
+    getWorkingBoard(){
+        return new Board(this.WIDTH, this.HEIGHT, [...this.snakePixels, this.food])
+    }
     // ****************** Spawns new block ******************
     #newPlayer(){
         // return [new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 3)]

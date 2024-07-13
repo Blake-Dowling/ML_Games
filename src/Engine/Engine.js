@@ -5,22 +5,39 @@ import { Timer } from './Timer.js'
 import { Tetris } from '../Tetris/Tetris.js'
 import { Snake } from '../Snake/Snake.js'
 
-import { Agent } from './Agent.js'
-import { Genetic } from './Genetic.js'
+import { DeepQAgent, GeneticAgent } from './Agent.js'
+// import { Genetic } from './Genetic.js'
 import { TrainingChart } from './Chart.js'
 
+let game = undefined
+let agent = undefined
 
 export function Engine(props) {
-    const [game, setGame] = useState(null) //stores state, reward, done
-    const [agent, setAgent] = useState(null)
+
     const [score, setScore] = useState(0)
 
     const [ticks, setTicks] = useState(0)
 
     const [board, setBoard] = useState(null)
 
-    const [displayView, setDisplayView] = useState(true)
-    const [displayChart, setDisplayChart] = useState(true)
+    useEffect(() => {
+
+      // game = new Tetris()
+      game = new Snake()
+
+      // agent = new DeepQAgent(game?.modelParams)
+      agent = new GeneticAgent(game?.modelParams, 50, 10)
+      // const agent = new Genetic(newGame.modelParams, 500, 10)
+
+      console.debug("Agent loaded: ", agent)
+
+      setBoard(game.workingBoard)
+  }, []) //Todo: props.game
+
+    useEffect(() => {
+        tick()
+    }, [ticks])
+
 
     async function tick(){
 
@@ -29,45 +46,11 @@ export function Engine(props) {
       //   game?.initGame()
       // }
 
-      const state = game?.getState()
-
-      const action = await agent?.getPrediction(state)
-      // console.debug(agent?.step)
-
- 
-      game?.move(action)
-      // console.debug(game?.snakePixels)
-
-      game?.getResult()
-      // agent?.pushDataPoint(result?.state, result?.action, result?.reward, result?.done)
-      setBoard(game?.workingBoard)
-
-
+      await agent?.engineCycle(game)
+      setBoard(game?.getWorkingBoard())
       setScore(game?.score)
-
     }
-    useEffect(() => {
-      const newGame = new Tetris()
-      // const newGame = new Snake()
-      newGame.initGame()
-      setGame(newGame)
-      const agent = new Agent(newGame.modelParams)
 
-      // const agent = new Genetic(newGame.modelParams, 500, 10)
-
-      console.debug("Agent loaded: ", agent)
-      setAgent(agent)
-      setBoard(newGame.workingBoard)
-  }, []) //Todo: props.game
-
-    //Event loop
-    useEffect(() => {
-
-
-        tick()
-
-
-    }, [ticks])
 
     return (
       <div>
@@ -76,29 +59,16 @@ export function Engine(props) {
           ticks={ticks}
           setTicks={setTicks}
         />
-        <button
-            onClick={() => {setDisplayView(prevDisplayView => {return !prevDisplayView})}}
-        >
-            Display View
-        </button>
-        <button
-            onClick={() => {setDisplayChart(prevDisplayChart => {return !prevDisplayChart})}}
-        >
-            Display Chart
-        </button>
 
-    {/* <div>
-      # Samples: {agent?.onlineModel?.scoreHistory?.length * agent?.BATCH_SIZE}
-    </div> */}
           <div>
-            {displayView &&
+            {
                 <View
                 ticks={ticks}
                 board={board}
                 setBoard={setBoard}
                 />
             }
-            {displayChart &&
+            {
                 <TrainingChart
                     agent={agent}
                     ticks={ticks}
