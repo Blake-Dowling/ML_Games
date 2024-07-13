@@ -3,14 +3,7 @@ import * as tf from '@tensorflow/tfjs'
 
 
 const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
-// const tfPath = isNode ? '@tensorflow/tfjs' : '@tensorflow/tfjs-node'
-// const tf = await import(tfPath)
 
-
-
-// if(isNode){
-//     const fs = await import('fs')
-// }
 const createMemoryIOHandler = (modelJson, weightsArrayBuffer) => {
     return {
       load: async () => {
@@ -23,52 +16,20 @@ const createMemoryIOHandler = (modelJson, weightsArrayBuffer) => {
     };
   }
 
-export class tfModel{
-    constructor(inputShape, outputShape, name){
-        this.inputShape = inputShape
-        this.outputShape = outputShape
+class Model{
+    constructor(name){
         this.name = name
-        this.model = null
         this.sampleCountHistory = []
         this.lossHistory = []
         this.accuracyHistory = []
         this.scoreHistory = []
     }
-
-    initModel(){
-        // ****************** X model ******************
-        //Input Layer
-        const inputLayer = tf.input({shape: [this.inputShape]})
-        //Hidden Layers
-
-        const dense1 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
-        const dense2 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
-        const dense3 = tf.layers.dense({units: 32, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
-        //Output Layer
-        const outputLayer = tf.layers.dense({units: this.outputShape, activation: 'linear', name: 'output'})
-
-        //Apply Layers
-        let x = dense1.apply(inputLayer)
-        x = dense2.apply(x)
-        x = dense3.apply(x)
-        const output = outputLayer.apply(x)
-
-        //Create and compile model
-        let model = tf.model({inputs: inputLayer, outputs:output})
-        // console.log(model.summary())
-        model.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
-        this.model = model
-        // return model
-    }
     async loadModel(){
         try{
-            let loadedModel = undefined
             let trainingHistory = undefined
-            let modelData = undefined
-            let weightsData = undefined
             if(isNode){
                 const response = new Promise((resolve, reject) => {
-                    axios.post('http://localhost:3001/loadModel', {
+                    axios.post('http://localhost:3001/loadTrainingHistory', {
                         data: {
                             name: this.name,
                         }
@@ -81,19 +42,9 @@ export class tfModel{
                     .catch(error => console.error('Error:', error))
                 })
                 const result = await response
-
-                // console.debug("result:", result)
-                modelData = JSON.parse(result.modelData)
-
-                weightsData = result.weightsData
-                // console.debug("weightsData: ", typeof(weightsData))
                 trainingHistory = JSON.parse(result.trainingHistory)
-                // console.debug(result.trainingHistory)
-                const ioHandler = createMemoryIOHandler(modelData, weightsData.data)
-                loadedModel = await tf.loadLayersModel(ioHandler)
             }
             else{
-                loadedModel = await tf.loadLayersModel(`/${this.name}/model.json`)
                 trainingHistory = await fetch(`/${this.name}/trainingHistory`)
                 trainingHistory = await trainingHistory.json()
 
@@ -102,28 +53,15 @@ export class tfModel{
             this.lossHistory = trainingHistory.lossHistory
             this.accuracyHistory = trainingHistory.accuracyHistory
             this.scoreHistory = trainingHistory.scoreHistory
-            loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
-            this.model = loadedModel
         } catch(error){
             console.error(error)
         }
     }
     async saveModel(){
-        // Get model topology (JSON) and weights (binary)
-        if(!this.model){
-            return new Promise((resolve) => resolve(false))
-        }
-        const modelData = await this.model?.save(tf.io.withSaveHandler(async (data) => data));
-        // console.debug(modelData)
-        // Convert the weights data to a base64-encoded string
-        const weightsData = Buffer.from(modelData?.weightData).toString('base64');
-        // console.debug(this.lossHistory)
         return new Promise((resolve, reject) => {
-            axios.post('http://localhost:3001/saveModel', {
+            axios.post('http://localhost:3001/saveTrainingHistory', {
                 data: {
                     name: this.name,
-                    modelData: JSON.stringify(modelData),//.modelTopology,
-                    weightsData: weightsData,
                     trainingHistory: JSON.stringify({
                         sampleCountHistory: this.sampleCountHistory,
                         lossHistory: this.lossHistory,
@@ -131,6 +69,93 @@ export class tfModel{
                         scoreHistory: this.scoreHistory
                     })
 
+                }
+            })
+            .then(response => {
+                resolve(response)
+            })
+            .catch(error => console.error('Error:', error))
+        })
+    }
+}
+
+export class DeepQNetwork extends Model{
+    constructor(name, inputShape, outputShape){
+        super(name)
+        this.inputShape = inputShape
+        this.outputShape = outputShape
+        this.model = undefined
+    }
+
+    init(){
+        const inputLayer = tf.input({shape: [this.inputShape]})
+        const dense1 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
+        const dense2 = tf.layers.dense({units: 64, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
+        const dense3 = tf.layers.dense({units: 32, activation: 'relu', })//kernelRegularizer: tf.regularizers.l2({l2: 0.1})})
+        const outputLayer = tf.layers.dense({units: this.outputShape, activation: 'linear', name: 'output'})
+
+        let x = dense1.apply(inputLayer)
+        x = dense2.apply(x)
+        x = dense3.apply(x)
+        const output = outputLayer.apply(x)
+
+        let model = tf.model({inputs: inputLayer, outputs:output})
+        model.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
+        this.model = model
+        // return model
+    }
+    async loadModel(){
+        super.loadModel()
+        try{
+            let loadedModel = undefined
+            let modelData = undefined
+            let weightsData = undefined
+            if(isNode){
+                const response = new Promise((resolve, reject) => {
+                    axios.post('http://localhost:3001/loadDeepQNetwork', {
+                        data: {
+                            name: this.name,
+                        }
+                    })
+                    .then(response => {
+                        const result = response.data.response
+                        resolve(result)
+
+                    })
+                    .catch(error => console.error('Error:', error))
+                })
+                const result = await response
+                modelData = JSON.parse(result.modelData)
+                weightsData = result.weightsData
+                const ioHandler = createMemoryIOHandler(modelData, weightsData.data)
+                loadedModel = await tf.loadLayersModel(ioHandler)
+            }
+            else{
+                loadedModel = await tf.loadLayersModel(`/${this.name}/model.json`)
+
+            }
+            loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
+            this.model = loadedModel
+        } catch(error){
+            console.error(error)
+        }
+    }
+    async saveModel(){
+        super.saveModel()
+        if(!this.model){
+            return new Promise((resolve) => resolve(false))
+        }
+        const modelData = await this.model?.save(tf.io.withSaveHandler(async (data) => data));
+        // Convert the weights data to a base64-encoded string
+        const weightsData = Buffer.from(modelData?.weightData).toString('base64');
+        // console.debug(this.lossHistory)
+        console.debug("-----name", this.name)
+        return new Promise((resolve, reject) => {
+            axios.post('http://localhost:3001/saveDeepQNetwork', {
+                data: {
+                    name: this.name,
+                    modelData: JSON.stringify(modelData),
+                    weightsData: weightsData
                 }
             })
             .then(response => {
@@ -155,18 +180,9 @@ export class tfModel{
                 onlineOutput[i][input.actions[i]] = input.rewards[i] + maxOnlineQValues[i+1]
             }
             else if(input.done[i] === true){
-                // for(let j=0; j<onlineOutput[i].length; j++){
-                //     onlineOutput[i][j] = input.rewards[i]
-                // }
                 onlineOutput[i][input.actions[i]] = input.rewards[i]
             }
-            // console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
-            // if(i > 0 && input.rewards[i] > 1){
-            //     console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
-            // }
-            // if(i > 0 && input.done[i]){
-            //     console.debug(input.states[i-1], input.actions[i-1], input.rewards[i-1], input.done[i-1], onlineOutput[i-1])
-            // }
+
         }
 
         const tfInput = tf.tensor(input.states)
@@ -189,3 +205,114 @@ export class tfModel{
         })
     }
 }
+
+export class GeneticArray extends Model{
+    constructor(name, outputShape, sequenceLength, populationSize){
+        super(name)
+        this.outputShape = outputShape
+        this.sequenceLength = sequenceLength
+        this.populationSize = populationSize
+
+        this.model = undefined
+    }
+
+    init(){
+        this.model = [] 
+        for(let i=0; i<this.populationSize; i++){
+            this.model.push(new Sequence(this.outputSize, this.sequenceLength))
+        }
+    }
+    async loadModel(){
+        super.loadModel()
+        try{
+            let arrayData = undefined
+            if(isNode){
+                const response = new Promise((resolve, reject) => {
+                    axios.post('http://localhost:3001/loadGeneticArray', {
+                        data: {
+                            name: this.name,
+                        }
+                    })
+                    .then(response => {
+                        const result = response.data.response
+                        resolve(result)
+
+                    })
+                    .catch(error => console.error('Error:', error))
+                })
+                const result = await response
+                arrayData = JSON.parse(result.arrayData)
+            }
+            else{
+                arrayData = await fetch(`/${this.name}/arrayData`)
+                arrayData = await arrayData.json()
+
+            }
+            this.model = arrayData
+        } catch(error){
+            console.error(error)
+        }
+    }
+    async saveModel(){
+        super.saveModel()
+        return new Promise((resolve, reject) => {
+            axios.post('http://localhost:3001/saveGeneticArray', {
+                data: {
+                    name: this.name,
+                    arrayData: JSON.stringify(this.model)
+                }
+            })
+            .then(response => {
+                resolve(response)
+            })
+            .catch(error => console.error('Error:', error))
+        })
+    }
+
+    // // ob<array> -> tensor
+    async trainModel(input){
+
+
+    }
+
+}
+class Sequence {
+    constructor(outputSize, sequenceLength){
+        this.outputSize = outputSize
+        this.sequenceLength = sequenceLength
+        this.fitness = 0
+
+        this.sequence = this.newRandom()
+    }
+    clone(){
+        const newSequence = new Sequence(this.outputSize, this.sequenceLength)
+        newSequence.fitness = this.fitness
+        newSequence.sequence = this.sequence
+        return newSequence
+    }
+    mutate(){
+        for(let i=0; i<this.sequence.length; i++){
+            if(Math.floor(Math.random()*5) < 1){
+                this.sequence[i] = Math.floor(Math.random()*this.outputSize)
+            }
+        }
+    }
+    newRandom(){
+        const newSequence = Array(this.sequenceLength).fill(0)
+        for(let i=0; i<newSequence.length; i++){
+            newSequence[i] = Math.floor(Math.random()*this.outputSize)
+        }
+        return newSequence
+    }
+    loadModel(params){
+
+    }
+  
+    //
+
+
+    async trainModel(){
+
+    }
+  
+  }

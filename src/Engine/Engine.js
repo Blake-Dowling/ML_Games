@@ -6,6 +6,7 @@ import { Tetris } from '../Tetris/Tetris.js'
 import { Snake } from '../Snake/Snake.js'
 
 import { Agent } from './Agent.js'
+import { Genetic } from './Genetic.js'
 import { TrainingChart } from './Chart.js'
 
 
@@ -23,14 +24,22 @@ export function Engine(props) {
 
     async function tick(){
 
+      //Todo: eliminate this
+      // if((agent?.step % agent?.sequenceLength) === 0){
+      //   game?.initGame()
+      // }
+
       const state = game?.getState()
 
       const action = await agent?.getPrediction(state)
+      // console.debug(agent?.step)
 
+ 
       game?.move(action)
       // console.debug(game?.snakePixels)
 
       game?.getResult()
+      // agent?.pushDataPoint(result?.state, result?.action, result?.reward, result?.done)
       setBoard(game?.workingBoard)
 
 
@@ -43,6 +52,8 @@ export function Engine(props) {
       newGame.initGame()
       setGame(newGame)
       const agent = new Agent(newGame.modelParams)
+
+      // const agent = new Genetic(newGame.modelParams, 500, 10)
 
       console.debug("Agent loaded: ", agent)
       setAgent(agent)

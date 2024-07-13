@@ -1,23 +1,22 @@
 
 import { Tetris } from '../Tetris/Tetris.js'
 import { Snake } from '../Snake/Snake.js'
-import { Agent } from '../Engine/Agent.js'
+import { Genetic } from '../Engine/Genetic.js'
+
+// const audio = document.getElementById('audio1')
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-let game = new Tetris()
-// let game = new Snake()
-game.initGame()
-const agent = new Agent(game.modelParams)
+// let game = new Tetris()
+let game = new Snake()
+game.initGame()//erase?
+const agent = new Genetic(game.modelParams, 500, 10)
 await sleep(5000)
 
-// agent.onlineModel.resetModel()
-// console.debug(agent.onlineModel.model)
 
-// console.debug(agent?.onlineModel)
-const BATCHES_PER_SESSION = 1000
+const BATCHES_PER_SESSION = 1
 async function train(session, numSessions){
 
     let highScore = 0
@@ -31,9 +30,14 @@ async function train(session, numSessions){
 
     while(numSamples<agent?.BATCH_SIZE*BATCHES_PER_SESSION){
 
+        if((agent?.step % agent?.sequenceLength) === 0){
+            game?.initGame()
+          }
+
         const state = game?.getState()
 
         const action = await agent?.getPrediction(state)
+
 
         game?.move(action)
         let result = game?.getResult()
@@ -53,10 +57,13 @@ async function train(session, numSessions){
         
 
 
-        if(agent?.states.length >= agent?.BATCH_SIZE+1){
+        if(agent?.steps >= agent?.BATCH_SIZE+1){
             console.log("----------------------------------------------------------")
             console.log("Batch: ", (session*BATCHES_PER_SESSION)+((numSamples/agent?.BATCH_SIZE)+1), "/", (numSessions)*(BATCHES_PER_SESSION))
             const start = performance.now()
+            console.debug(agent?.population)
+            agent?.sortPopulation()
+            agent?.mutatePopulation()
             const history = await agent?.trainModel(highScore)
             const end = performance.now()
             loss = parseFloat(history.history.loss[0].toFixed(3))

@@ -1,4 +1,4 @@
-import { tfModel } from '../Server/ModelManagement.js'
+import { DeepQNetwork } from '../Server/ModelManagement.js'
 import * as tf from '@tensorflow/tfjs'
 // const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
 // const tfPath = isNode ? '@tensorflow/tfjs' : '@tensorflow/tfjs-node'
@@ -16,13 +16,12 @@ export class Agent {
 
   }
   loadModel(params){
-    const inputSize = params[0]
-    const outputSize = params[1]
-    const name = params[2]
-    let onlineModel = new tfModel(inputSize, outputSize, name)
-    onlineModel.initModel()
+    const name = params[0]
+    const inputShape = params[1]
+    const outputShape = params[2]
+    let onlineModel = new DeepQNetwork(name, inputShape, outputShape)
+    onlineModel.init()
     onlineModel.loadModel()
-
     return onlineModel
   }
 
@@ -55,7 +54,7 @@ export class Agent {
   }
   async trainModel(){
         //Shallow copy onlineModel attribute for agent re-render in Engine
-        const onlineModel = new tfModel(this.onlineModel.inputShape, this.onlineModel.outputShape, this.onlineModel.name)
+        const onlineModel = new DeepQNetwork(this.onlineModel.name, this.onlineModel.inputShape, this.onlineModel.outputShape)
         onlineModel.model = this.onlineModel.model
         onlineModel.sampleCountHistory = this.onlineModel.sampleCountHistory
         onlineModel.lossHistory = this.onlineModel.lossHistory

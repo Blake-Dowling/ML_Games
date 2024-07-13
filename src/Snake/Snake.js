@@ -15,7 +15,7 @@ export class Snake {
         this.snakePixels = []
         this.food = undefined
 
-        this.modelParams = [11, 3, 'snake-model-7'] //7
+        this.modelParams = ['snake-model', 11, 3] //7
         this.initGame()
     }
     initGame(){
@@ -31,7 +31,8 @@ export class Snake {
     }
     // ****************** Spawns new block ******************
     #newPlayer(){
-        return [new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 3)]
+        // return [new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 3)]
+        return [new Pixel(parseInt(this.WIDTH/2), parseInt(this.HEIGHT/2), 3)]
     }
     #newFood(){
         let foodOnSnake = true
