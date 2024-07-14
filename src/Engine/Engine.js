@@ -22,11 +22,11 @@ export function Engine(props) {
 
     useEffect(() => {
 
-      // game = new Tetris()
-      game = new Snake()
+      game = new Tetris()
+      // game = new Snake()
 
-      // agent = new DeepQAgent(game?.modelParams)
-      agent = new GeneticAgent(game?.modelParams, 500, 50)
+      agent = new DeepQAgent(game?.modelParams)
+      // agent = new GeneticAgent(game?.modelParams, 500, 50)
 
       console.debug("Agent loaded: ", agent)
 

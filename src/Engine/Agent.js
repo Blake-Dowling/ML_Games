@@ -46,14 +46,14 @@ class Agent {
     let prevNumSamples = this.onlineModel?.sampleCountHistory[this.onlineModel?.sampleCountHistory?.length-1]
     prevNumSamples = prevNumSamples ? prevNumSamples : 0
     let newNumSamples = prevNumSamples
-    const BATCHES_PER_SESSION = 100
+    const BATCHES_PER_SESSION = 1000
     let avgScore = 0
     console.log("----------------------------------------------------------")
     while(newNumSamples-prevNumSamples<this.BATCH_SIZE*BATCHES_PER_SESSION){
       await this.trainBatch(game)
       avgScore += this.highScore
       newNumSamples += this.BATCH_SIZE
-      console.log(newNumSamples, " samples.")
+      console.log(newNumSamples, "/", prevNumSamples+(this.BATCH_SIZE*BATCHES_PER_SESSION), " samples. Highscore: ", this.highScore, ".")
     }
     this.onlineModel?.sampleCountHistory?.push(newNumSamples)
     this.onlineModel?.scoreHistory?.push(avgScore/(BATCHES_PER_SESSION))
