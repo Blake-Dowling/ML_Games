@@ -105,7 +105,7 @@ export class DeepQNetwork extends Model{
         // return model
     }
     async loadModel(){
-        super.loadModel()
+        await super.loadModel()
         try{
             let loadedModel = undefined
             let modelData = undefined
@@ -141,7 +141,7 @@ export class DeepQNetwork extends Model{
         }
     }
     async saveModel(){
-        super.saveModel()
+        await super.saveModel()
         if(!this.model){
             return new Promise((resolve) => resolve(false))
         }
@@ -149,7 +149,6 @@ export class DeepQNetwork extends Model{
         // Convert the weights data to a base64-encoded string
         const weightsData = Buffer.from(modelData?.weightData).toString('base64');
         // console.debug(this.lossHistory)
-        console.debug("-----name", this.name)
         return new Promise((resolve, reject) => {
             axios.post('http://localhost:3001/saveDeepQNetwork', {
                 data: {
@@ -182,17 +181,14 @@ export class DeepQNetwork extends Model{
             else if(input.done[i] === true){
                 onlineOutput[i][input.actions[i]] = input.rewards[i]
             }
-
         }
-
         const tfInput = tf.tensor(input.states)
         const targetOutput = {'output': tf.tensor(onlineOutput)}
-
         let history = await this.model.fit(tfInput, targetOutput, {epochs: 1, shuffle: true})
         const loss = history.history.loss
         const accuracy = history.history.acc
         // this.trainingHistory = this.trainingHistory ? this.trainingHistory.concat(loss) : loss
-        console.log("loss: ", loss[loss.length-1], "accuracy: ", accuracy[accuracy.length-1])
+        // console.log("loss: ", loss[loss.length-1], "accuracy: ", accuracy[accuracy.length-1])
         return new Promise((resolve, reject) => {
             resolve(history)
         })
@@ -249,7 +245,14 @@ export class GeneticArray extends Model{
                 arrayData = await arrayData.json()
 
             }
-            this.model = arrayData
+            const newModel = []
+            for(let i=0; i<arrayData.length; i++){
+                const newSequence = new Sequence(arrayData[i].outputShape, arrayData[i].sequenceLength)
+                newSequence.fitness = arrayData[i].fitness
+                newSequence.sequence = arrayData[i].sequence
+                newModel.push(newSequence)
+            }
+            this.model = newModel
         } catch(error){
             console.error(error)
         }
@@ -271,10 +274,10 @@ export class GeneticArray extends Model{
     }
 
     // // ob<array> -> tensor
-    async trainModel(input){
+    // async trainModel(input){
 
 
-    }
+    // }
 
 }
 class Sequence {
@@ -282,7 +285,6 @@ class Sequence {
         this.outputShape = outputShape
         this.sequenceLength = sequenceLength
         this.fitness = 0
-
         this.sequence = this.newRandom()
     }
     clone(){
@@ -304,16 +306,6 @@ class Sequence {
             newSequence[i] = Math.floor(Math.random()*this.outputShape)
         }
         return newSequence
-    }
-    loadModel(params){
-
-    }
-  
-    //
-
-
-    async trainModel(){
-
     }
   
   }
