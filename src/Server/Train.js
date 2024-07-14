@@ -11,7 +11,7 @@ function sleep(ms) {
 let game = new Snake()
 game.initGame()
 // const agent = new DeepQAgent(game.modelParams)
-const agent = new GeneticAgent(game.modelParams, 100, 20)
+const agent = new GeneticAgent(game.modelParams, 500, 50)
 await sleep(5000)
 
 const numBatches = 50

@@ -24,7 +24,6 @@ class Agent {
     const state = game?.getState()
     const action = await this?.getPrediction(state)
     game?.move(action)
-    game?.getResult()
   }
   async trainCycle(game){
     const state = game?.getState()
@@ -47,7 +46,7 @@ class Agent {
     let prevNumSamples = this.onlineModel?.sampleCountHistory[this.onlineModel?.sampleCountHistory?.length-1]
     prevNumSamples = prevNumSamples ? prevNumSamples : 0
     let newNumSamples = prevNumSamples
-    const BATCHES_PER_SESSION = 1000
+    const BATCHES_PER_SESSION = 100
     let avgScore = 0
     console.log("----------------------------------------------------------")
     while(newNumSamples-prevNumSamples<this.BATCH_SIZE*BATCHES_PER_SESSION){
@@ -131,6 +130,7 @@ export class DeepQAgent extends Agent {
   }
   async engineCycle(game){
     await super.engineCycle(game)
+    game?.getResult()
   }
   async trainCycle(game){
     await super.trainCycle(game)
@@ -172,10 +172,13 @@ export class GeneticAgent extends Agent{
 
   async getPrediction(state){
       await super.getPrediction()
+      if(this.step >= this.BATCH_SIZE){
+        this.step = 0
+      }
       const sequence = parseInt(this.step / this.sequenceLength)
       const index = parseInt(this.step % this.sequenceLength)
       const action = this.onlineModel?.model[sequence]?.sequence[index]
-      this.step = (this.step + 1)// % (this.sequenceLength * this.populationSize)
+      this.step = (this.step + 1)
       return action
   }
   // trainModel()
@@ -183,10 +186,12 @@ export class GeneticAgent extends Agent{
       super.pushDataPoint()
       const sequence = parseInt((this.step - 1) / this.sequenceLength)
       this.onlineModel.model[sequence].fitness += reward
+      if(done){
+        this.step = ((sequence + 1) * this.sequenceLength) 
+      }
       if(this.step >= this.BATCH_SIZE){
         this.sortPopulation()
         this.mutatePopulation()
-        this.step = 0
     }
       // console.debug(this.population[sequence].fitness)
   }
@@ -195,14 +200,14 @@ export class GeneticAgent extends Agent{
       for(let i=parseInt(this.onlineModel?.model.length/10); i<this.onlineModel?.model.length; i++){
           this.onlineModel.model[i] = this.onlineModel?.model[Math.floor(Math.random()*parseInt(this.onlineModel?.model.length/10))].clone()
       }
-      console.debug(this.onlineModel.model[0].fitness)
       for(let i=0; i<this.onlineModel?.model.length; i++){
           this.onlineModel.model[i].fitness = 0
       }
 
   }
   mutatePopulation(){
-      for(let i=0; i<this.onlineModel?.model.length; i++){
+
+      for(let i=parseInt(this.onlineModel?.model.length/10); i<this.onlineModel?.model.length; i++){
           this.onlineModel?.model[i].mutate()
       }
   }
@@ -211,8 +216,16 @@ export class GeneticAgent extends Agent{
         game?.initGame()
     }
     await super.engineCycle(game)
+    const result = game?.getResult()
+    if(result?.done){
+      const sequence = parseInt((this.step - 1) / this.sequenceLength)
+        this.step = ((sequence + 1) * this.sequenceLength) 
+    }
   }
   async trainCycle(game){
+    if((this?.step % this?.sequenceLength) === 0){
+      game?.initGame()
+    }
     await super.trainCycle(game)
   }
   async trainBatch(game){

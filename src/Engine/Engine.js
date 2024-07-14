@@ -26,7 +26,7 @@ export function Engine(props) {
       game = new Snake()
 
       // agent = new DeepQAgent(game?.modelParams)
-      agent = new GeneticAgent(game?.modelParams, 100, 20)
+      agent = new GeneticAgent(game?.modelParams, 500, 50)
 
       console.debug("Agent loaded: ", agent)
 

@@ -1,5 +1,5 @@
 import { Board, Pixel } from '../Engine/Objects.js'
-
+import seedrandom from 'seedrandom'
 class Result {
     constructor(score, reward, done){
         this.score = score
@@ -20,7 +20,9 @@ export class Snake {
     }
     initGame(){
         this.score = 0
+        this.rng = seedrandom(2)
         this.clearGame()
+
     }
     clearGame(){
         this.snakePixels = this.#newPlayer()
@@ -35,12 +37,14 @@ export class Snake {
     // ****************** Spawns new block ******************
     #newPlayer(){
         // return [new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 3)]
+        this.direction = 0
         return [new Pixel(parseInt(this.WIDTH/2), parseInt(this.HEIGHT/2), 3)]
     }
     #newFood(){
         let foodOnSnake = true
         while(foodOnSnake){
-            this.food = new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 1)
+            this.food = new Pixel(Math.floor(this.rng()*this.WIDTH), Math.floor(this.rng()*this.HEIGHT), 1)
+            // this.food = new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 1)
             let thisFoodOnSnake = false
             for(let i=0; i<this.snakePixels.length; i++){
                 if(this.snakePixels[i].colliding(this.food)){

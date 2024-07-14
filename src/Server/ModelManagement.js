@@ -290,12 +290,12 @@ class Sequence {
     clone(){
         const newSequence = new Sequence(this.outputShape, this.sequenceLength)
         newSequence.fitness = this.fitness
-        newSequence.sequence = this.sequence
+        newSequence.sequence = JSON.parse(JSON.stringify(this.sequence))
         return newSequence
     }
     mutate(){
         for(let i=0; i<this.sequence.length; i++){
-            if(Math.floor(Math.random()*5) < 1){
+            if(Math.floor(Math.random()*3) < 1){
                 this.sequence[i] = Math.floor(Math.random()*this.outputShape)
             }
         }
