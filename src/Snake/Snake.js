@@ -15,7 +15,7 @@ export class Snake {
         this.snakePixels = []
         this.food = undefined
 
-        this.modelParams = ['snake-model', 11, 3] //7
+        this.modelParams = ['snake-model-2', 102, 4] //7
         this.initGame()
     }
     initGame(){
@@ -36,15 +36,15 @@ export class Snake {
     }
     // ****************** Spawns new block ******************
     #newPlayer(){
-        // return [new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 3)]
         this.direction = 0
-        return [new Pixel(parseInt(this.WIDTH/2), parseInt(this.HEIGHT/2), 3)]
+        return [new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 3)]
+        // return [new Pixel(parseInt(this.WIDTH/2), parseInt(this.HEIGHT/2), 3)]
     }
     #newFood(){
         let foodOnSnake = true
         while(foodOnSnake){
-            this.food = new Pixel(Math.floor(this.rng()*this.WIDTH), Math.floor(this.rng()*this.HEIGHT), 1)
-            // this.food = new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 1)
+            // this.food = new Pixel(Math.floor(this.rng()*this.WIDTH), Math.floor(this.rng()*this.HEIGHT), 1)
+            this.food = new Pixel(Math.floor(Math.random()*this.WIDTH), Math.floor(Math.random()*this.HEIGHT), 1)
             let thisFoodOnSnake = false
             for(let i=0; i<this.snakePixels.length; i++){
                 if(this.snakePixels[i].colliding(this.food)){
@@ -59,11 +59,13 @@ export class Snake {
         this.ticksSinceAte = 0
     }
     #movePlayer(action){
-        // actions: 0 left, 1 straight, 2 right
-        // console.debug("--------------------------------------------")
-        // console.debug(this.direction, action)
-        this.direction = (((this.direction + (parseInt(action) - 1)) % 4) + 4) % 4
-        this.turns.unshift(parseInt(action) - 1)
+        const prevDirection = this.direction
+        let turn = action - prevDirection
+        if(turn === 2 || turn === -2){
+            turn = 0
+        }
+        this.direction = (((this.direction + turn) % 4) + 4) % 4
+        this.turns.unshift(turn)
 
         // console.debug(this.direction)
         const newHead = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y, this.snakePixels[0].val)
@@ -139,10 +141,10 @@ export class Snake {
         // console.debug(this.direction, this.snakePixels[0], this.snakePixels[this.snakePixels.length-1])
         // console.debug(relativeTailDirection)
         // return [this.snakePixels.length].concat(tailDistanceArray).concat([relativeTailDirection]).concat(wallDistanceArray).concat(selfDistanceArray).concat(foodDistanceArray)
-        return [bend].concat(wallDistanceArray).concat(selfDistanceArray).concat(foodDistanceArray) //7
+        ////return [bend].concat(wallDistanceArray).concat(selfDistanceArray).concat(foodDistanceArray) //7
         // this.workingBoard = new Board(this.WIDTH, this.HEIGHT, [...this.snakePixels, this.food])
         // console.debug(this.workingBoard?.board?.flat())
-        // return [this.direction].concat(this.workingBoard?.board?.flat()) //8
+        return [this.snakePixels[0].x].concat([this.snakePixels[0].y]).concat(this.workingBoard?.board?.flat()) //8
         // this.state = [this.direction].concat([this.snakePixels.length]).concat(dangerArray).concat(foodDirectionArray)
 
     }
