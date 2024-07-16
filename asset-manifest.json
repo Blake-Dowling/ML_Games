@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/ML_Games_Site/static/css/main.50a229ea.css",
+    "main.js": "/ML_Games_Site/static/js/main.fa43edea.js",
+    "index.html": "/ML_Games_Site/index.html",
+    "main.50a229ea.css.map": "/ML_Games_Site/static/css/main.50a229ea.css.map",
+    "main.fa43edea.js.map": "/ML_Games_Site/static/js/main.fa43edea.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.50a229ea.css",
+    "static/js/main.fa43edea.js"
+  ]
+}
