@@ -60,7 +60,7 @@ export function Engine(props) {
     }
     
     return (
-      <div>
+      <div className={"Engine"}>
         <button onClick={()=>{if(curGame !== "tetris"){setCurGame("tetris")}}}>Tetris</button>
         <button onClick={()=>{if(curGame !== "snake"){setCurGame("snake")}}}>Snake</button>
         Score: {score}
