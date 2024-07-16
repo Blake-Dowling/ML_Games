@@ -59,13 +59,17 @@ export class Snake {
         this.ticksSinceAte = 0
     }
     #movePlayer(action){
-        // actions: 0 left, 1 straight, 2 right
-        // console.debug("--------------------------------------------")
-        // console.debug(this.direction, action)
+
         this.direction = (((this.direction + (parseInt(action) - 1)) % 4) + 4) % 4
         this.turns.unshift(parseInt(action) - 1)
+        // const prevDirection = this.direction
+        // let turn = action - prevDirection
+        // if(turn === 2 || turn === -2){
+        //     turn = 0
+        // }
+        // this.direction = (((this.direction + turn) % 4) + 4) % 4
+        // this.turns.unshift(turn)
 
-        // console.debug(this.direction)
         const newHead = new Pixel(this.snakePixels[0].x, this.snakePixels[0].y, this.snakePixels[0].val)
         // console.debug(newHead)
         switch(this.direction){

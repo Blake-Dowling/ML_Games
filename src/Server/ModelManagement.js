@@ -1,7 +1,6 @@
 import axios from 'axios'
 import * as tf from '@tensorflow/tfjs'
 
-
 const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
 
 const createMemoryIOHandler = (modelJson, weightsArrayBuffer) => {

@@ -1,24 +1,15 @@
 import { DeepQNetwork, GeneticArray } from '../Server/ModelManagement.js'
 import * as tf from '@tensorflow/tfjs'
-// const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
-// const tfPath = isNode ? '@tensorflow/tfjs' : '@tensorflow/tfjs-node'
-// const tf = await import(tfPath)
-
 
 class Agent {
   constructor(){
     this.highScore = 0
   }
-
-
   async getPrediction(state){
-
   }
   pushDataPoint(state, prediction, reward, done){
-
   }
   async trainModel(){
-
   }
   async engineCycle(game){
     const state = game?.getState()
@@ -46,7 +37,7 @@ class Agent {
     let prevNumSamples = this.onlineModel?.sampleCountHistory[this.onlineModel?.sampleCountHistory?.length-1]
     prevNumSamples = prevNumSamples ? prevNumSamples : 0
     let newNumSamples = prevNumSamples
-    const BATCHES_PER_SESSION = 1000
+    const BATCHES_PER_SESSION = 10
     let avgScore = 0
     console.log("----------------------------------------------------------")
     while(newNumSamples-prevNumSamples<this.BATCH_SIZE*BATCHES_PER_SESSION){
@@ -59,8 +50,6 @@ class Agent {
     this.onlineModel?.scoreHistory?.push(avgScore/(BATCHES_PER_SESSION))
   }
 }
-
-
 
 export class DeepQAgent extends Agent {
   constructor(params){
@@ -150,7 +139,6 @@ export class DeepQAgent extends Agent {
   }
 }
 
-
 export class GeneticAgent extends Agent{
   constructor(params, sequenceLength, populationSize){
     super()
@@ -203,10 +191,8 @@ export class GeneticAgent extends Agent{
       for(let i=0; i<this.onlineModel?.model.length; i++){
           this.onlineModel.model[i].fitness = 0
       }
-
   }
   mutatePopulation(){
-
       for(let i=parseInt(this.onlineModel?.model.length/10); i<this.onlineModel?.model.length; i++){
           this.onlineModel?.model[i].mutate()
       }

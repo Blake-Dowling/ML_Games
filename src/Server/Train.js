@@ -7,11 +7,11 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-let game = new Tetris()
-// let game = new Snake()
-game.initGame()
+// let game = new Tetris()
+let game = new Snake()
+// game.initGame()
 const agent = new DeepQAgent(game.modelParams)
-// const agent = new GeneticAgent(game.modelParams, 500, 50)
+// const agent = new GeneticAgent(game.modelParams, 500, 500)
 await sleep(5000)
 
 const numBatches = 50

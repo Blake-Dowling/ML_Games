@@ -6,7 +6,6 @@ import { Tetris } from '../Tetris/Tetris.js'
 import { Snake } from '../Snake/Snake.js'
 
 import { DeepQAgent, GeneticAgent } from './Agent.js'
-// import { Genetic } from './Genetic.js'
 import { TrainingChart } from './Chart.js'
 
 let game = undefined
@@ -15,21 +14,15 @@ let agent = undefined
 export function Engine(props) {
 
     const [score, setScore] = useState(0)
-
     const [ticks, setTicks] = useState(0)
-
     const [board, setBoard] = useState(null)
 
     useEffect(() => {
-
-      game = new Tetris()
-      // game = new Snake()
-
+      // game = new Tetris()
+      game = new Snake()
       agent = new DeepQAgent(game?.modelParams)
-      // agent = new GeneticAgent(game?.modelParams, 500, 50)
-
+      // agent = new GeneticAgent(game?.modelParams, 500, 500)
       console.debug("Agent loaded: ", agent)
-
       setBoard(game.workingBoard)
   }, []) //Todo: props.game
 
@@ -39,17 +32,10 @@ export function Engine(props) {
 
 
     async function tick(){
-
-      //Todo: eliminate this
-      // if((agent?.step % agent?.sequenceLength) === 0){
-      //   game?.initGame()
-      // }
-
       await agent?.engineCycle(game)
       setBoard(game?.getWorkingBoard())
       setScore(game?.score)
     }
-
 
     return (
       <div>
@@ -58,7 +44,6 @@ export function Engine(props) {
           ticks={ticks}
           setTicks={setTicks}
         />
-
           <div>
             {
                 <View
@@ -74,7 +59,6 @@ export function Engine(props) {
                 />
             }
           </div>
-
       </div>
     )
   }
