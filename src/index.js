@@ -12,7 +12,8 @@ function App(){
   const [game, setGame] = useState(1)
   return (
     <div className="App">
-      <div className="header">
+      <Engine/>
+      {/* <div className="header">
         <nav className="nav">
           <ul>
             <li><Link to="/">Home</Link></li>
@@ -20,12 +21,12 @@ function App(){
             <li><Link to="/tetris">Tetris</Link></li>
           </ul>
         </nav>  
-      </div>
-      <Routes>
+      </div> */}
+      {/* <Routes>
         <Route path='/' element={<Home/>}></Route>
         <Route path='/jump' element={<Engine game={0}/>}></Route>
         <Route path='/tetris' element={<Engine game={1}/>}></Route>
-      </Routes>
+      </Routes> */}
 
     </div>
   )
@@ -33,10 +34,10 @@ function App(){
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <BrowserRouter>
+  // <React.StrictMode>
+  //   <BrowserRouter>
       <App />
-    </BrowserRouter>
-  </React.StrictMode>
+    // </BrowserRouter>
+  //</React.StrictMode>
 );
 
