@@ -44,7 +44,7 @@ class Model{
                 trainingHistory = JSON.parse(result.trainingHistory)
             }
             else{
-                trainingHistory = await fetch(`/${this.name}/trainingHistory`)
+                trainingHistory = await fetch(`${process.env.PUBLIC_URL}/${this.name}/trainingHistory`)
                 trainingHistory = await trainingHistory.json()
 
             }
@@ -130,7 +130,7 @@ export class DeepQNetwork extends Model{
                 loadedModel = await tf.loadLayersModel(ioHandler)
             }
             else{
-                loadedModel = await tf.loadLayersModel(`/${this.name}/model.json`)
+                loadedModel = await tf.loadLayersModel(`${process.env.PUBLIC_URL}/${this.name}/model.json`)
 
             }
             loadedModel.compile({optimizer: tf.train.adam(0.001), loss: {'output': 'meanSquaredError'}, metrics: ['accuracy']})
@@ -240,7 +240,7 @@ export class GeneticArray extends Model{
                 arrayData = JSON.parse(result.arrayData)
             }
             else{
-                arrayData = await fetch(`/${this.name}/arrayData`)
+                arrayData = await fetch(`${process.env.PUBLIC_URL}/${this.name}/arrayData`)
                 arrayData = await arrayData.json()
 
             }

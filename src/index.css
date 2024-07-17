@@ -14,7 +14,24 @@ code {
 
 .Engine{
   background: black;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  /* display: flex;
+  flex-direction: row;
+  align-items: center; */
+}
+.TetrisButton{
+  position: absolute;
+  top: 35%;
+  left: 18%;
+}
+.SnakeButton{
+  position: absolute;
+  top: 45%;
+  left: 18%;
+}
+.TrainingChart{
+  position: absolute;
+  height: 200px;
+  width: 400px;
+  top: 65%;
+  left: 18%;
 }

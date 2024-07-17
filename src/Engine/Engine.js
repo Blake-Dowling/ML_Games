@@ -61,28 +61,27 @@ export function Engine(props) {
     
     return (
       <div className={"Engine"}>
-        <button onClick={()=>{if(curGame !== "tetris"){setCurGame("tetris")}}}>Tetris</button>
-        <button onClick={()=>{if(curGame !== "snake"){setCurGame("snake")}}}>Snake</button>
-        Score: {score}
+        <button className={"TetrisButton"} onClick={()=>{if(curGame !== "tetris"){setCurGame("tetris")}}}>Tetris</button>
+        <button className={"SnakeButton"} onClick={()=>{if(curGame !== "snake"){setCurGame("snake")}}}>Snake</button>
         <Timer
           ticks={ticks}
           setTicks={setTicks}
         />
           <div>
-            {
+
                 <View
+                score={score}
                 ticks={ticks}
                 board={board}
                 setBoard={setBoard}
                 />
-            }
-            {
+            </div>
+            <div className={"TrainingChart"}>
                 <TrainingChart
                     agent={agent}
                     ticks={ticks}
                 />
-            }
-          </div>
+            </div>
       </div>
     )
   }
