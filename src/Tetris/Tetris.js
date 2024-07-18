@@ -17,7 +17,7 @@ export class Tetris {
 
         this.WIDTH = 6
         this.HEIGHT = 10
-        this.modelParams = ['tetris-model', this.WIDTH+3, 4*this.WIDTH]//6
+        this.modelParams = ['tetris-model-2', this.WIDTH+3, 4*this.WIDTH]//6
         this.initGame()
     }
     initGame(){
@@ -70,7 +70,7 @@ export class Tetris {
         let reward = 0
         reward += (this.WIDTH) * (completeRows.size**2) + 1
 
-        this.score += (10 * completeRows.size)
+        this.score += (completeRows.size)
 
         reward -= 5 * Number(fullColumn)
         //Done

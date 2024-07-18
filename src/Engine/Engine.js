@@ -61,8 +61,8 @@ export function Engine(props) {
     
     return (
       <div className={"Engine"}>
-        <button className={"TetrisButton"} onClick={()=>{if(curGame !== "tetris"){setCurGame("tetris")}}}>Tetris</button>
-        <button className={"SnakeButton"} onClick={()=>{if(curGame !== "snake"){setCurGame("snake")}}}>Snake</button>
+        <button className={"TetrisButton"} onClick={()=>{if(curGame !== "tetris"){setCurGame("tetris")}}}></button>
+        <button className={"SnakeButton"} onClick={()=>{if(curGame !== "snake"){setCurGame("snake")}}}></button>
         <Timer
           ticks={ticks}
           setTicks={setTicks}

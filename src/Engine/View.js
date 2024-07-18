@@ -9,11 +9,12 @@ import { TextBufferGeometry, TextGeometry } from 'three/examples/jsm/geometries/
 
 const CELL_SIZE = 40
 
-const cubeSize = 1
-const spacing = 1.2
+const cubeSize = .6
+const spacing = .8
 
 
-let scene, camera, renderer, composer, loader, textMesh
+let scene, camera, renderer, composer, loader, scoreMesh
+let titleMesh, tetrisMesh, snakeMesh, nameMesh
 
 
 
@@ -21,17 +22,17 @@ export function View(props){
     const mountRef = useRef(null);
     const cubeRefs = useRef([])
 
-    function createText(font, text){
-        if (textMesh) {
-            scene.remove(textMesh);
-            textMesh.geometry.dispose()
-            textMesh.material.dispose()
+    function changeText(mesh, font, text, size){
+        if (mesh) {
+            scene.remove(mesh);
+            mesh.geometry.dispose()
+            mesh.material.dispose()
         }
 
         const geometry = new TextGeometry(text, {
             font: font,
-            size: 1,
-            depth: 0.2,
+            size: size,
+            depth: 0,//0.2,
             curveSegments: 12,
             bevelEnabled: true,
             bevelThickness: 0.1,
@@ -40,11 +41,9 @@ export function View(props){
         });
     
         const material = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9});
-        textMesh = new THREE.Mesh(geometry, material);
-        textMesh.position.x = -3
-        textMesh.position.y = 10
-        scene.add(textMesh);
-        
+        mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+        return mesh
     }
 
     useEffect(() => {
@@ -52,16 +51,12 @@ export function View(props){
         scene = new THREE.Scene()
         camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000)
         renderer = new THREE.WebGLRenderer({ antialias: true })
-        
-
         camera.position.x = 5
         camera.position.y = 5
         camera.position.z = 2 * Math.max(props.board?.width, props.board?.height)
-
         renderer.setSize(window.innerWidth, window.innerHeight)
         renderer.setClearColor(0x000000, 1)
         mountRef.current.appendChild(renderer.domElement)
-      
         const pointLight1 = new THREE.PointLight(0xffffff, 1, 1, 0.1); // Green light
         pointLight1.position.set(5,5,5);
         scene.add(pointLight1);
@@ -74,26 +69,44 @@ export function View(props){
                 const material = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9})
                 const cube = new THREE.Mesh(geometry, material)
                 cube.position.x = 2 + (camera.position.z/2) - (c * spacing)
-                cube.position.y = (camera.position.z/2) - (r * spacing)
+                cube.position.y = -3 + (camera.position.z/2) - (r * spacing)
                 scene.add(cube)
                 cubeRefs.current[r][c] = cube
             }
         }
 
+        loader = new FontLoader();
+        loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
+            nameMesh = changeText(nameMesh, font, "Blake Dowling", .3)
+            nameMesh.position.x = 10
+            nameMesh.position.y = 10.5
+        })
+        loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
+            titleMesh = changeText(titleMesh, font, "Deep Q Arcade", .5)
+            titleMesh.position.x = 3
+            titleMesh.position.y = 10.5
+        })
+        loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
+            tetrisMesh = changeText(tetrisMesh, font, "Tetris", .5)
+            tetrisMesh.position.x = -2
+            tetrisMesh.position.y = 8
+        })
+        loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
+            snakeMesh = changeText(snakeMesh, font, "Snake", .5)
+            snakeMesh.position.x = -2
+            snakeMesh.position.y = 6
+        })
+
 
         const screenGeometry = new THREE.PlaneGeometry(20, 15, 32, 32);
-
-        // Manipulate vertices to create curvature
         const position = screenGeometry.attributes.position;
         for (let i = 0; i < position.count; i++) {
           const vertex = new THREE.Vector3().fromBufferAttribute(position, i);
           const distanceFromCenter = vertex.length();
-        //   const distanceFromCenter = Math.sqrt(Math.pow(vertex.x, 2) + Math.pow(vertex.y, 2))
           const z = -0.015 * Math.pow(distanceFromCenter, 2);
           position.setZ(i, z);
         }
         screenGeometry.computeVertexNormals();
-
         const screenMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         opacity: 1,
@@ -105,14 +118,13 @@ export function View(props){
         const screen = new THREE.Mesh(screenGeometry, screenMaterial);
         screen.position.x = 5
         screen.position.y = 5
-        screen.position.z = 0;
+        screen.position.z = -1;
         scene.add(screen)
 
         composer = new EffectComposer(renderer);
         const renderPass = new RenderPass(scene, camera);
         composer.addPass(renderPass);
-      
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 1.5, 0.85); // tweak parameters for desired effect
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 1.5, 0.85); 
         composer.addPass(bloomPass);
 
         const handleResize = () => {
@@ -122,7 +134,6 @@ export function View(props){
             composer.setSize(window.innerWidth, window.innerHeight);
           };
         window.addEventListener('resize', handleResize);
-
         return () => {
             window.removeEventListener('resize', handleResize);
             if (mountRef.current && renderer.domElement) {
@@ -130,8 +141,8 @@ export function View(props){
             }
           }
     }, [props.board?.width, props.board?.height])
-    useEffect(() => {
 
+    useEffect(() => {
         function cubeColor(rowIndex, columnIndex){
             const cellVal = props.board?.board[rowIndex][columnIndex]
             return cellVal == 3 ? 0x00ff00 : cellVal == 2 ? 0xff0000 : cellVal == 1 ? 0x000000 : 0x000000 
@@ -141,10 +152,14 @@ export function View(props){
             return cellVal > 0 ? 1 : 0.02
         }
         function animate(){
+
             loader = new FontLoader();
             loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
-                createText(font, `Score ${props.score}`)
+                scoreMesh = changeText(scoreMesh, font, `Score ${props.score}`, .5)
+                scoreMesh.position.x = 9
+                scoreMesh.position.y = 9.5
             })
+
             if(cubeRefs.current.length){
                 for(let r=0; r<cubeRefs?.current?.length; r++){
                     for(let c=0; c<cubeRefs?.current[0]?.length; c++){
@@ -159,9 +174,6 @@ export function View(props){
             }
         }
         animate()
-
-
-        
 
     }, [props.board, props.score])
 

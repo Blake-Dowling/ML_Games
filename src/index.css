@@ -19,14 +19,20 @@ code {
   align-items: center; */
 }
 .TetrisButton{
+  background: rgba(255, 255, 255, 0);
   position: absolute;
-  top: 35%;
-  left: 18%;
+  width: 20%;
+  height: 10%;
+  top: 29%;
+  left: 22%;
 }
 .SnakeButton{
+  background: rgba(255, 255, 255, 0);
   position: absolute;
-  top: 45%;
-  left: 18%;
+  width: 20%;
+  height: 10%;
+  top: 40%;
+  left: 22%;
 }
 .TrainingChart{
   position: absolute;
