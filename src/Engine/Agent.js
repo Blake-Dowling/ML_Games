@@ -37,7 +37,7 @@ class Agent {
     let prevNumSamples = this.onlineModel?.sampleCountHistory[this.onlineModel?.sampleCountHistory?.length-1]
     prevNumSamples = prevNumSamples ? prevNumSamples : 0
     let newNumSamples = prevNumSamples
-    const BATCHES_PER_SESSION = 10
+    const BATCHES_PER_SESSION = 1000
     let avgScore = 0
     console.log("----------------------------------------------------------")
     while(newNumSamples-prevNumSamples<this.BATCH_SIZE*BATCHES_PER_SESSION){
@@ -59,18 +59,23 @@ export class DeepQAgent extends Agent {
     this.actions = []
     this.rewards = []
     this.done = []
-    this.onlineModel = this.loadModel(params)
     this.history = undefined
+    this.onlineModel = undefined
+    this.name = params[0]
+    this.inputShape = params[1]
+    this.outputShape = params[2]
   }
   
-  loadModel(params){
-    const name = params[0]
-    const inputShape = params[1]
-    const outputShape = params[2]
-    let onlineModel = new DeepQNetwork(name, inputShape, outputShape)
+  async loadModel(){
+    let onlineModel = new DeepQNetwork(this.name, this.inputShape, this.outputShape)
     onlineModel.init()
-    onlineModel.loadModel()
-    return onlineModel
+    await onlineModel.loadModel()
+    this.onlineModel =  onlineModel
+  }
+  copy(){
+    const newAgent = new DeepQAgent([this.name, this.inputShape, this.outputShape])
+    newAgent.onlineModel = this.onlineModel
+    return newAgent
   }
 
   async getPrediction(state){

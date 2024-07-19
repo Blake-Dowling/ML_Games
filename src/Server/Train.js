@@ -10,9 +10,11 @@ function sleep(ms) {
 let game = new Tetris()
 // let game = new Snake()
 // game.initGame()
-const agent = new DeepQAgent(game.modelParams)
+let agent = new DeepQAgent(game.modelParams)
+await agent.loadModel()
+agent = agent.copy()
 // const agent = new GeneticAgent(game.modelParams, 500, 500)
-await sleep(5000)
+// await sleep(5000)
 
 const numBatches = 50
 for(let i=0; i<numBatches; i++){

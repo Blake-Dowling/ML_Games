@@ -20,33 +20,34 @@ export function Engine(props) {
     const [game, setGame] = useState(new Tetris())
     const [agent, setAgent] = useState(null)
 
+    async function init(newGame){
+      let newAgent = new DeepQAgent(newGame?.modelParams)
+      await newAgent.loadModel()
+      newAgent = newAgent.copy()
+      setAgent(newAgent)
+    }
     useEffect(() => {
-
-      // game = new Tetris()
-      // game = new Snake()
-      setAgent(new DeepQAgent(game?.modelParams))
-      // agent = new GeneticAgent(game?.modelParams, 500, 500)
-
-
-
-
-  }, []) //Todo: props.game
-    useEffect(() => {
+      init(game)
+  }, []) 
+    async function changeGame(){
       let newGame = undefined
       switch(curGame){
         case "tetris":
           newGame = new Tetris()
           setBoard(newGame?.workingBoard)
+          await init(newGame)
           setGame(newGame)
-          setAgent(prevAgent => {return new prevAgent.constructor(newGame?.modelParams)})
           break
         case "snake":
           newGame = new Snake()
           setBoard(newGame?.workingBoard)
-          setAgent(prevAgent => {return new prevAgent.constructor(newGame?.modelParams)})
+          await init(newGame)
           setGame(newGame)
           break
       }
+    }
+    useEffect(() => {
+      changeGame()
     }, [curGame])
     useEffect(() => {
         tick()
@@ -70,18 +71,19 @@ export function Engine(props) {
           <div>
 
                 <View
+                agent={agent}
                 score={score}
                 ticks={ticks}
                 board={board}
                 setBoard={setBoard}
                 />
             </div>
-            <div className={"TrainingChart"}>
+            {/* <div className={"TrainingChart"}>
                 <TrainingChart
                     agent={agent}
                     ticks={ticks}
                 />
-            </div>
+            </div> */}
       </div>
     )
   }
