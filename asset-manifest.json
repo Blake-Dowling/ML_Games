@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/ML_Games/static/css/main.dabb3365.css",
+    "main.css": "/ML_Games/static/css/main.661c0ae1.css",
     "main.js": "/ML_Games/static/js/main.bb34e0f6.js",
     "index.html": "/ML_Games/index.html",
-    "main.dabb3365.css.map": "/ML_Games/static/css/main.dabb3365.css.map",
+    "main.661c0ae1.css.map": "/ML_Games/static/css/main.661c0ae1.css.map",
     "main.bb34e0f6.js.map": "/ML_Games/static/js/main.bb34e0f6.js.map"
   },
   "entrypoints": [
-    "static/css/main.dabb3365.css",
+    "static/css/main.661c0ae1.css",
     "static/js/main.bb34e0f6.js"
   ]
 }
