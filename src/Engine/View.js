@@ -8,6 +8,8 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextBufferGeometry, TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
+import { createChart } from './ChartThree.js'
+
 const CELL_SIZE = 40
 
 const cubeSize = .6
@@ -24,96 +26,9 @@ export function View(props){
     const mountRef = useRef(null);
     const cubeRefs = useRef([])
     const chartMeshes = useRef([])
-
-    async function drawChart(onlineModel, size){
-        const x = -2.5
-        const y = 0
-        const width = size
-        const height = size / 4
-
-        for(let i=0; i<chartMeshes.current.length; i++){
-
-            scene.remove(chartMeshes.current[i])
-            chartMeshes.current[i].geometry?.dispose()
-            chartMeshes.current[i].material?.dispose()
-        }
-        chartMeshes.current = []
-
-        let data = onlineModel?.scoreHistory
-
-        const maxDataValue = data ? Math.max(...data) : 1
-
-        const points = []
-        data?.forEach((value, index) => {
-            points.push(new THREE.Vector3(x + ((index/data.length)*width), y + ((value/maxDataValue)*height), 0))
-        })
-        const dataGeometry = new THREE.BufferGeometry().setFromPoints(points)
-        const dataMaterial = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9});
-        const dataLine = new THREE.Line(dataGeometry, dataMaterial);
-        chartMeshes.current.push(dataLine)
-
-
-        scene.add(dataLine);
-        // scene.children.forEach((value) => {console.debug(value)})
-        // console.debug(scene)
     
 
 
-        const axesMaterial = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9});
-        const xAxisGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, y, 0), new THREE.Vector3(x+width, y, 0)]);
-        const xAxisLine = new THREE.Line(xAxisGeometry, axesMaterial);
-        chartMeshes.current.push(xAxisLine)
-        scene.add(xAxisLine);
-        const yAxisGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, y, 0), new THREE.Vector3(x, y+height, 0)]);
-        const yAxisLine = new THREE.Line(yAxisGeometry, axesMaterial);
-        chartMeshes.current.push(yAxisLine)
-        scene.add(yAxisLine);
-
-
-        const labels = []
-        
-        for(let i=0; i<onlineModel?.sampleCountHistory?.length; i++){
-            if(i % parseInt(onlineModel?.sampleCountHistory?.length/10) === 0){
-                labels.push(onlineModel?.sampleCountHistory[i])
-            }
-        }
-
-        
-        // labels?.forEach((value, index) => {
-            // console.debug(value.toString())
-            // loader = new FontLoader();
-
-            const newMeshes = await new Promise((resolve, reject) => {
-            loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
-                const meshesToReturn = []
-                labels?.forEach((value, index) => {
-                const labelGeometry = new TextGeometry(value.toString(), {
-                    font: font,
-                    size: .25,
-                    depth: 0,//0.2,
-                    curveSegments: 12,
-                    bevelEnabled: true,
-                    bevelThickness: 0.1,
-                    bevelSize: 0.05,
-                    bevelSegments: 0, //5
-                });
-
-                const labelMaterial = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9});
-                const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
-                labelMesh.position.x = x + ((index/labels.length)*width)
-                labelMesh.position.y = y - 1.5
-                labelMesh.rotation.x = Math.PI / 9
-                labelMesh.rotation.y = Math.PI / 3
-                labelMesh.rotation.z = Math.PI / 9
-                meshesToReturn.push(labelMesh)
-            })
-                resolve(meshesToReturn)
-                
-                 })
-            })
-            newMeshes.forEach(value => {chartMeshes.current.push(value);scene.add(value)})
-
-    }
 
     function changeText(mesh, font, text, size){
         if (mesh) {
@@ -146,7 +61,7 @@ export function View(props){
         renderer = new THREE.WebGLRenderer({ antialias: true })
         camera.position.x = 5
         camera.position.y = 5
-        camera.position.z = 2 * Math.max(props.board?.width, props.board?.height)
+        camera.position.z = 20
         renderer.setSize(window.innerWidth, window.innerHeight)
         renderer.setClearColor(0x000000, 1)
         mountRef.current.appendChild(renderer.domElement)
@@ -155,43 +70,31 @@ export function View(props){
         scene.add(pointLight1);
     
 
-        for(let r=0; r<props.board?.board?.length; r++){
-            cubeRefs.current[r] = []
-            for(let c=0; c<props.board?.board[0]?.length; c++){
-                const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize)
-                const material = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9})
-                const cube = new THREE.Mesh(geometry, material)
-                cube.position.x = 2 + (camera.position.z/2) - (c * spacing)
-                cube.position.y = -3 + (camera.position.z/2) - (r * spacing)
-                scene.add(cube)
-                cubeRefs.current[r][c] = cube
-            }
-        }
+
 
         loader = new FontLoader();
-        loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
-            nameMesh = changeText(nameMesh, font, "Blake Dowling", .3)
-            nameMesh.position.x = 10
+        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
+            nameMesh = changeText(nameMesh, font, "Blake Dowling", .2)
+            nameMesh.position.x = 10.5
             nameMesh.position.y = 10.5
         })
-        loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
+        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
             titleMesh = changeText(titleMesh, font, "Deep Q Arcade", .5)
-            titleMesh.position.x = 3
+            titleMesh.position.x = 1
             titleMesh.position.y = 10.5
         })
-        loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
+        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
             tetrisMesh = changeText(tetrisMesh, font, "Tetris", .5)
             tetrisMesh.position.x = -2
             tetrisMesh.position.y = 8
         })
-        loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
+        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
             snakeMesh = changeText(snakeMesh, font, "Snake", .5)
             snakeMesh.position.x = -2
             snakeMesh.position.y = 6
         })
-
-
-
+    
+        
         const screenGeometry = new THREE.PlaneGeometry(20, 15, 32, 32);
         const position = screenGeometry.attributes.position;
         for (let i = 0; i < position.count; i++) {
@@ -221,6 +124,8 @@ export function View(props){
         const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 1.5, 0.85); 
         composer.addPass(bloomPass);
 
+        
+
         const handleResize = () => {
             renderer.setSize(window.innerWidth, window.innerHeight);
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -234,19 +139,51 @@ export function View(props){
                 mountRef.current.removeChild(renderer.domElement);
             }
           }
-    }, [props.board?.width, props.board?.height])
+
+    }, [])
+    function createBoard(){
+        for(let i=0; i<cubeRefs.current.length; i++){
+            for(let j=0; j<cubeRefs.current[i].length; j++){
+            
+            scene.remove(cubeRefs.current[i][j])
+            cubeRefs.current[i][j].geometry?.dispose()
+            cubeRefs.current[i][j].material?.dispose()
+            }
+        }
+        
+        cubeRefs.current = []
+        
+
+        for(let r=0; r<props.board?.board?.length; r++){
+            cubeRefs.current[r] = []
+            for(let c=0; c<props.board?.board[0]?.length; c++){
+                const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize)
+                const material = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9})
+                const cube = new THREE.Mesh(geometry, material)
+                cube.position.x = 2 + (camera.position.z/2) - (c * spacing)
+                cube.position.y = -3 + (camera.position.z/2) - (r * spacing)
+                scene.add(cube)
+                
+                cubeRefs.current[r][c] = cube
+            }
+        }
+        // console.debug(scene.children.length)
+    }
 
     function animate(){
+        // console.debug("-----------")
         // console.debug(scene.children.length)
         // console.debug(chartMeshes.current.length)
         renderer.render(scene, camera)
         composer.render();
     }
     useEffect(() => {
-        drawChart(props.agent?.onlineModel, 8)
-        console.debug(scene.children.length)
+        createChart(props.agent?.onlineModel, 8, scene, chartMeshes)
+        // console.debug(scene.children.length)
     }, [props.agent])
+    
     useEffect(() => {
+
         function cubeColor(rowIndex, columnIndex){
             const cellVal = props.board?.board[rowIndex][columnIndex]
             return cellVal == 3 ? 0x00ff00 : cellVal == 2 ? 0xff0000 : cellVal == 1 ? 0x000000 : 0x000000 
@@ -256,8 +193,10 @@ export function View(props){
             return cellVal > 0 ? 1 : 0.02
         }
 
-
-
+        // console.debug(cubeRefs.current)
+        if(!(cubeRefs?.current?.length === props?.board?.height && cubeRefs?.current[0].length === props?.board?.width)){
+            createBoard()
+        }
         if(cubeRefs.current.length){
             for(let r=0; r<cubeRefs?.current?.length; r++){
                 for(let c=0; c<cubeRefs?.current[0]?.length; c++){
@@ -272,11 +211,11 @@ export function View(props){
 
         animate()
 
-    }, [props.board])
+    }, [props.board?.board])
     useEffect(() => {
-        loader.load(`${process.env.PUBLIC_URL}/fonts/helvetiker_regular.typeface.json`, function (font) {
+        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
             scoreMesh = changeText(scoreMesh, font, `Score ${props.score}`, .5)
-            scoreMesh.position.x = 9
+            scoreMesh.position.x = 7
             scoreMesh.position.y = 9.5
         })
     }, [props.score])

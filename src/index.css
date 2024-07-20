@@ -20,6 +20,7 @@ code {
 }
 .TetrisButton{
   background: rgba(255, 255, 255, 0);
+  border: rgba(255, 255, 255, 0);
   position: absolute;
   width: 20%;
   height: 10%;
@@ -28,6 +29,7 @@ code {
 }
 .SnakeButton{
   background: rgba(255, 255, 255, 0);
+  border: rgba(255, 255, 255, 0);
   position: absolute;
   width: 20%;
   height: 10%;

@@ -16,7 +16,7 @@ export function Engine(props) {
     const [score, setScore] = useState(0)
     const [ticks, setTicks] = useState(0)
     const [board, setBoard] = useState(null)
-    const [curGame, setCurGame] = useState(null)
+    const [curGame, setCurGame] = useState("tetris")
     const [game, setGame] = useState(new Tetris())
     const [agent, setAgent] = useState(null)
 
