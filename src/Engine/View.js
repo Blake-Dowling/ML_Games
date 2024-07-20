@@ -17,7 +17,7 @@ const spacing = .8
 
 
 let scene, camera, renderer, composer, loader, scoreMesh
-let titleMesh, tetrisMesh, snakeMesh, nameMesh
+let titleMesh, selectMesh, tetrisMesh, snakeMesh, nameMesh
 // let chartMeshes.current = []
 
 
@@ -74,28 +74,33 @@ export function View(props){
 
         loader = new FontLoader();
         loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
-            nameMesh = changeText(nameMesh, font, "Blake Dowling", .2)
+            nameMesh = changeText(nameMesh, font, "Blake Dowling", .25)
             nameMesh.position.x = 10.5
-            nameMesh.position.y = 10.5
+            nameMesh.position.y = 11
         })
         loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
-            titleMesh = changeText(titleMesh, font, "Deep Q Arcade", .5)
-            titleMesh.position.x = 1
-            titleMesh.position.y = 10.5
+            titleMesh = changeText(titleMesh, font, "Deep Q Arcade", .7)
+            titleMesh.position.x = 0
+            titleMesh.position.y = 12
+        })
+        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
+            selectMesh = changeText(selectMesh, font, "Select Game:", .5)
+            selectMesh.position.x = -5
+            selectMesh.position.y = 10
         })
         loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
             tetrisMesh = changeText(tetrisMesh, font, "Tetris", .5)
-            tetrisMesh.position.x = -2
+            tetrisMesh.position.x = -3
             tetrisMesh.position.y = 8
         })
         loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
             snakeMesh = changeText(snakeMesh, font, "Snake", .5)
-            snakeMesh.position.x = -2
+            snakeMesh.position.x = -3
             snakeMesh.position.y = 6
         })
     
         
-        const screenGeometry = new THREE.PlaneGeometry(20, 15, 32, 32);
+        const screenGeometry = new THREE.PlaneGeometry(28, 21, 32, 32);
         const position = screenGeometry.attributes.position;
         for (let i = 0; i < position.count; i++) {
           const vertex = new THREE.Vector3().fromBufferAttribute(position, i);
@@ -160,8 +165,8 @@ export function View(props){
                 const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize)
                 const material = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9})
                 const cube = new THREE.Mesh(geometry, material)
-                cube.position.x = 2 + (camera.position.z/2) - (c * spacing)
-                cube.position.y = -3 + (camera.position.z/2) - (r * spacing)
+                cube.position.x = 4.5 + (camera.position.z/2) - (c * spacing)
+                cube.position.y = -5 + (camera.position.z/2) - (r * spacing)
                 scene.add(cube)
                 
                 cubeRefs.current[r][c] = cube
@@ -215,8 +220,8 @@ export function View(props){
     useEffect(() => {
         loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
             scoreMesh = changeText(scoreMesh, font, `Score ${props.score}`, .5)
-            scoreMesh.position.x = 7
-            scoreMesh.position.y = 9.5
+            scoreMesh.position.x = 8
+            scoreMesh.position.y = 6
         })
     }, [props.score])
 

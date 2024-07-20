@@ -166,7 +166,7 @@ export class Snake {
 
         const collision = this.#checkCollision()
         this.#handleCollisionOrTimeout(collision || timeout)
-        this.score += (10 * ate)
+        this.score += ate
         let reward = 0
         reward += ate * 10//(this.score**2)
         reward -= 10 * (collision || timeout)

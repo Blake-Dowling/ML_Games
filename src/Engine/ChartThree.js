@@ -10,8 +10,8 @@ import { TextBufferGeometry, TextGeometry } from 'three/examples/jsm/geometries/
 
 
 export async function createChart(onlineModel, size, scene, chartMeshes){
-    const x = -2.5
-    const y = 1
+    const x = -4
+    const y = -1.5
     const width = size
     const height = size /3
 
