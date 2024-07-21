@@ -51,7 +51,6 @@ export async function createChart(onlineModel, size, scene, chartMeshes){
     
     for(let i=1; i<onlineModel?.sampleCountHistory?.length; i++){
         if(i % parseInt(onlineModel?.sampleCountHistory?.length/5) === 0){
-            console.debug(i)
             labels.push(onlineModel?.sampleCountHistory[i-1])
         }
     }

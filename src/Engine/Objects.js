@@ -8,7 +8,22 @@ export class Pixel{
         return this.x === otherPixel.x && this.y === otherPixel.y
     }
 }
-
+class Piece{
+    constructor(x, y){
+        this.id = Math.floor(Math.random()*1000000)
+        this.x = x
+        this.y = y
+        this.pixels = []
+    }
+    move(x, y){
+        this.x += x
+        this.y += y
+        for(let i=0; i<this.pixels.length; i++){
+            this.pixels[i].x += x
+            this.pixels[i].y += y
+        }
+    }
+}
 export class Board{
     constructor(width, height, pixels){
         this.width = width
@@ -56,6 +71,18 @@ export class Board{
             }
             else if(this.board[below.y][below.x] > 0){
                 return true
+            }
+        }
+        return false
+    }
+    collision(piece){
+        for(let i=0; i<this.pixels.length; i++){
+            const boardPixel = this.pixels[i]
+            for(let j=0; j<piece.pixels.length; j++){
+                const piecePixel = piece.pixels[j]
+                if(boardPixel.x == piecePixel.x && boardPixel.y == piecePixel.y){
+                    return true
+                }
             }
         }
         return false
@@ -150,5 +177,80 @@ export class TetrisBlock{
         //     }
         //     return newBlock
         // })
+    }
+}
+
+export class MarioPlayer extends Piece{
+    constructor(x, y){
+        super(x, y)
+        this.val = 3
+        this.init()
+    }
+    init(x, y){
+        this.pixels = [
+            new Pixel(this.x, this.y, this.val),
+            new Pixel(this.x, this.y-1, this.val),
+        ]
+    }
+
+}
+
+export class MarioPlatform extends Piece{
+    constructor(x, y, length){
+        super(x, y)
+        this.val = 1
+        this.length = length
+        this.init()
+    }
+    init(){
+        this.pixels = []
+        for(let i=0; i<this.length; i++){
+            this.pixels.push(new Pixel(this.x+i, this.y, this.val))
+        }
+    }
+
+}
+export class MarioPipe extends Piece{
+    constructor(x, y, height){
+        super(x, y)
+        this.val = 1
+        this.height = height
+        this.init()
+    }
+    init(){
+        this.pixels = []
+        for(let i=0; i<this.height; i++){
+            this.pixels.push(new Pixel(this.x, this.y-i, this.val))
+        }
+    }
+
+}
+export class MarioBoard extends Board{
+    constructor(width, height, pixels){
+        super(width, height, pixels)
+    }
+    grounded(piece){
+
+        const pixels = piece.pixels
+        for(let i=0; i<pixels?.length; i++){
+            const pixel = pixels[i]
+            for(let j=0; j<this.pixels.length; j++){
+                const boardPixel = this.pixels[j]
+                if(boardPixel.x == pixel.x && boardPixel.y == pixel.y+1){
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    pieceOB(piece){
+        const pixels = piece.pixels
+
+        for(let i=0; i<pixels?.length; i++){
+            if(this.ob(pixels[i])){
+                return true
+            }
+        }
+        return false
     }
 }

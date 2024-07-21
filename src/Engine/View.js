@@ -165,7 +165,7 @@ export function View(props){
                 const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize)
                 const material = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9})
                 const cube = new THREE.Mesh(geometry, material)
-                cube.position.x = 4.5 + (camera.position.z/2) - (c * spacing)
+                cube.position.x = -3 + (camera.position.z/2) + (c * spacing)
                 cube.position.y = -5 + (camera.position.z/2) - (r * spacing)
                 scene.add(cube)
                 

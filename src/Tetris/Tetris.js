@@ -17,7 +17,7 @@ export class Tetris {
 
         this.WIDTH = 6
         this.HEIGHT = 10
-        this.modelParams = ['tetris-model', this.WIDTH+3, 4*this.WIDTH]//6
+        this.modelParams = ['tetris-model-2', this.WIDTH+3, 4*this.WIDTH]//6
         this.initGame()
     }
     initGame(){

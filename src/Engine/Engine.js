@@ -1,9 +1,11 @@
 import React, {useState, useEffect} from 'react'
 import { View } from './View.js'
 import { Timer } from './Timer.js'
+import { KeyPress } from './KeyPress.js'
 // import { Jump } from '../Jump/Jump.js'
 import { Tetris } from '../Tetris/Tetris.js'
 import { Snake } from '../Snake/Snake.js'
+import { Mario } from '../Mario/Mario.js'
 
 import { DeepQAgent, GeneticAgent } from './Agent.js'
 import { TrainingChart } from './Chart.js'
@@ -16,8 +18,8 @@ export function Engine(props) {
     const [score, setScore] = useState(0)
     const [ticks, setTicks] = useState(0)
     const [board, setBoard] = useState(null)
-    const [curGame, setCurGame] = useState("tetris")
-    const [game, setGame] = useState(new Tetris())
+    const [curGame, setCurGame] = useState("mario")
+    const [game, setGame] = useState(new Mario())
     const [agent, setAgent] = useState(null)
 
     async function init(newGame){
@@ -40,6 +42,12 @@ export function Engine(props) {
           break
         case "snake":
           newGame = new Snake()
+          setBoard(newGame?.workingBoard)
+          await init(newGame)
+          setGame(newGame)
+          break
+        case "mario":
+          newGame = new Mario()
           setBoard(newGame?.workingBoard)
           await init(newGame)
           setGame(newGame)
@@ -83,6 +91,9 @@ export function Engine(props) {
                     agent={agent}
                     ticks={ticks}
                 />
+            </div> */}
+            {/* <div>
+              <KeyPress/>
             </div> */}
       </div>
     )
