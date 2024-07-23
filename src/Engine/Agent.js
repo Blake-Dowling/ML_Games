@@ -37,7 +37,7 @@ class Agent {
     let prevNumSamples = this.onlineModel?.sampleCountHistory[this.onlineModel?.sampleCountHistory?.length-1]
     prevNumSamples = prevNumSamples ? prevNumSamples : 0
     let newNumSamples = prevNumSamples
-    const BATCHES_PER_SESSION = 10
+    const BATCHES_PER_SESSION = 100
     let avgScore = 0
     console.log("----------------------------------------------------------")
     while(newNumSamples-prevNumSamples<this.BATCH_SIZE*BATCHES_PER_SESSION){
@@ -84,6 +84,7 @@ export class DeepQAgent extends Agent {
       return 0
     }
     let prediction = await this.onlineModel?.predictModel([state])
+    // console.debug(prediction[0])
     prediction = tf.argMax(tf.tensor(prediction[0]), 0).arraySync()
     return prediction
   }

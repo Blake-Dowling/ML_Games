@@ -23,6 +23,34 @@ class Piece{
             this.pixels[i].y += y
         }
     }
+    overLapping(otherPiece){
+        for(let i=0; i<this.pixels.length; i++){
+            const thisPixel = this.pixels[i]
+            for(let j=0; j<otherPiece.pixels.length; j++){
+                const otherPixel = otherPiece.pixels[j]
+                if(thisPixel.x == otherPixel.x && thisPixel.y == otherPixel.y){
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    onTopOf(otherPiece){
+        let lowestY = Number.MIN_SAFE_INTEGER
+        for(let i=0; i<this.pixels.length; i++){
+            lowestY = Math.max(lowestY, this.pixels[i].y)
+        }
+        for(let i=0; i<this.pixels.length; i++){
+            const thisPixel = this.pixels[i]
+            for(let j=0; j<otherPiece.pixels.length; j++){
+                const otherPixel = otherPiece.pixels[j]
+                if(thisPixel.y == lowestY && otherPixel.x == thisPixel.x && otherPixel.y == thisPixel.y+1){
+                    return true
+                }
+            }
+        }
+        return false
+    }
 }
 export class Board{
     constructor(width, height, pixels){
@@ -231,17 +259,20 @@ export class MarioBoard extends Board{
     }
     grounded(piece){
 
-        const pixels = piece.pixels
-        for(let i=0; i<pixels?.length; i++){
-            const pixel = pixels[i]
-            for(let j=0; j<this.pixels.length; j++){
-                const boardPixel = this.pixels[j]
-                if(boardPixel.x == pixel.x && boardPixel.y == pixel.y+1){
-                    return true
-                }
-            }
-        }
-        return false
+        // const pixels = piece.pixels
+        const boardPixels = new Piece(null, null)
+        boardPixels.pixels = this.pixels
+        return piece.onTopOf(boardPixels)
+        // for(let i=0; i<pixels?.length; i++){
+        //     const pixel = pixels[i]
+        //     for(let j=0; j<this.pixels.length; j++){
+        //         const boardPixel = this.pixels[j]
+        //         if(boardPixel.x == pixel.x && boardPixel.y == pixel.y+1){
+        //             return true
+        //         }
+        //     }
+        // }
+        // return false
     }
     pieceOB(piece){
         const pixels = piece.pixels
@@ -253,4 +284,15 @@ export class MarioBoard extends Board{
         }
         return false
     }
+    pieceFallen(piece){
+        const pixels = piece.pixels
+
+        for(let i=0; i<pixels?.length; i++){
+            if(pixels[i].y >= this.height){
+                return true
+            }
+        }
+        return false
+    }
+
 }

@@ -23,7 +23,8 @@ export async function createChart(onlineModel, size, scene, chartMeshes){
     }
     chartMeshes.current = []
     let data = onlineModel?.scoreHistory
-    const maxDataValue = data ? Math.max(...data) : 1
+    let maxDataValue = data ? Math.max(...data) : 1
+    maxDataValue = Math.max(maxDataValue, 1)
     const maxInterval = 10**(Math.ceil(Math.log10(maxDataValue))-1)
     const intervals = []
     for(let i=0; i<=maxInterval; i+=maxInterval/4){

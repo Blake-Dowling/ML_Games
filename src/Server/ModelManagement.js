@@ -174,6 +174,9 @@ export class DeepQNetwork extends Model{
         for(let i=0; i<input.states.length-1; i++){
             // console.debug("----------------------------------------")
             // console.debug(input.states[i], input.actions[i], input.rewards[i], input.done[i], onlineOutput[i])
+            // if(input.done[i]){
+            //     console.debug(input.actions[i], input.rewards[i], onlineOutput[i])
+            // }
             if(input.done[i] !== true){
                 onlineOutput[i][input.actions[i]] = input.rewards[i] + maxOnlineQValues[i+1]
             }
