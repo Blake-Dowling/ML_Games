@@ -197,6 +197,34 @@ export function View(props){
             const cellVal = props.board?.board[rowIndex][columnIndex]
             return cellVal > 0 ? 1 : 0.02
         }
+        function cubeOpacityTen(rowIndex, columnIndex){
+            const cellVal = props.board?.board[rowIndex][columnIndex]
+            let opacity = 0.02
+            switch(cellVal){
+                case 1:
+                    opacity = 0.1
+                    break
+                case 2:
+                    opacity = 0.15
+                    break
+                case 4:
+                    opacity = 0.2
+                    break
+                case 8:
+                    opacity = 0.25
+                    break
+                case 16:
+                    opacity = 0.3
+                    break
+                case 32:
+                    opacity = 0.35
+                    break
+                case 64:
+                    opacity = 0.4
+                    break
+            }
+            return opacity
+        }
 
         // console.debug(cubeRefs.current)
         if(!(cubeRefs?.current?.length === props?.board?.height && cubeRefs?.current[0].length === props?.board?.width)){
@@ -209,6 +237,9 @@ export function View(props){
                     cubeRefs.current[r][c].material.color.set(color)
                     const opacity = cubeOpacity(r, c)
                     cubeRefs.current[r][c].material.opacity = opacity
+                    if(props.curGame==="ten"){
+                        cubeRefs.current[r][c].material.opacity = cubeOpacityTen(r, c)
+                    }
                 }
             }
 

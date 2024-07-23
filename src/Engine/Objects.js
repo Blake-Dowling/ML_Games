@@ -103,6 +103,15 @@ export class Board{
         }
         return false
     }
+    collisionPixel(pixel){
+        for(let i=0; i<this.pixels.length; i++){
+            const boardPixel = this.pixels[i]
+            if(boardPixel.x == pixel.x && boardPixel.y == pixel.y){
+                return true
+            }
+        }
+        return false
+    }
     collision(piece){
         for(let i=0; i<this.pixels.length; i++){
             const boardPixel = this.pixels[i]
@@ -114,6 +123,18 @@ export class Board{
             }
         }
         return false
+    }
+    getPixels(){
+        const pixels = []
+        for(let i=0; i<this.board.length; i++){
+            for(let j=0; j<this.board[i].length; j++){
+                if(this.board[i][j] > 0){
+                    pixels.push(new Pixel(j, i, this.board[i][j]))
+                }
+
+            }
+        }
+        return pixels
     }
 }
 // ****************** TetrisBlock Class ******************
@@ -296,3 +317,4 @@ export class MarioBoard extends Board{
     }
 
 }
+
