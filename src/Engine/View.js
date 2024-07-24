@@ -222,6 +222,18 @@ export function View(props){
                 case 64:
                     opacity = 0.4
                     break
+                case 128:
+                    opacity = 0.45
+                    break
+                case 256:
+                    opacity = 0.5
+                    break
+                case 512:
+                    opacity = 0.55
+                    break
+                case 1028:
+                    opacity = 0.6
+                    break
             }
             return opacity
         }

@@ -2,13 +2,15 @@
 import { Tetris } from '../Tetris/Tetris.js'
 import { Snake } from '../Snake/Snake.js'
 import { Mario } from '../Mario/Mario.js'
+import { Ten } from '../1024/1024.js'
 import { DeepQAgent, GeneticAgent } from '../Engine/Agent.js'
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-let game = new Mario()
+let game = new Ten()
+// let game = new Mario()
 
 // let game = new Tetris()
 // let game = new Snake()

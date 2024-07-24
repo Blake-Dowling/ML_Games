@@ -25,7 +25,7 @@ export function Timer(props){
         min="0"
         max="6"
         step="1"
-        defaultValue={4}
+        defaultValue={3}
         >
         </input>
     </div>
