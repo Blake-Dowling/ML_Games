@@ -9,53 +9,26 @@ import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextBufferGeometry, TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
 import { createChart } from './ChartThree.js'
+import { init, changeText, createBoard } from './ThreeFunctions.js'
 
 const CELL_SIZE = 40
 
-const cubeSize = .6
-const spacing = .8
 
 
-let scene, camera, renderer, composer, loader, scoreMesh
-let titleMesh, selectMesh, tetrisMesh, snakeMesh, nameMesh
+
+export let scene, camera, renderer, composer, loader, scoreMesh
+export const textMeshes = {titleMesh : null, selectMesh : null, tetrisMesh : null, snakeMesh : null, nameMesh : null}
 // let chartMeshes.current = []
-
+export const cubeRefs = []
 
 
 export function View(props){
     const mountRef = useRef(null);
-    const cubeRefs = useRef([])
+
     const chartMeshes = useRef([])
     
-
-
-
-    function changeText(mesh, font, text, size){
-        if (mesh) {
-            scene.remove(mesh);
-            mesh.geometry.dispose()
-            mesh.material.dispose()
-        }
-
-        const geometry = new TextGeometry(text, {
-            font: font,
-            size: size,
-            depth: 0,//0.2,
-            curveSegments: 12,
-            bevelEnabled: true,
-            bevelThickness: 0.1,
-            bevelSize: 0.05,
-            bevelSegments: 5,
-        });
-    
-        const material = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9});
-        mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
-        return mesh
-    }
-
     useEffect(() => {
-
+        //Setup
         scene = new THREE.Scene()
         camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000)
         renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -68,38 +41,11 @@ export function View(props){
         const pointLight1 = new THREE.PointLight(0xffffff, 1, 1, 0.1); // Green light
         pointLight1.position.set(5,5,5);
         scene.add(pointLight1);
-    
-
-
-
         loader = new FontLoader();
-        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
-            nameMesh = changeText(nameMesh, font, "Blake Dowling", .25)
-            nameMesh.position.x = 10.5
-            nameMesh.position.y = 11
-        })
-        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
-            titleMesh = changeText(titleMesh, font, "Deep Q Arcade", .7)
-            titleMesh.position.x = 0
-            titleMesh.position.y = 12
-        })
-        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
-            selectMesh = changeText(selectMesh, font, "Select Game:", .5)
-            selectMesh.position.x = -5
-            selectMesh.position.y = 10
-        })
-        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
-            tetrisMesh = changeText(tetrisMesh, font, "Tetris", .5)
-            tetrisMesh.position.x = -3
-            tetrisMesh.position.y = 8
-        })
-        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
-            snakeMesh = changeText(snakeMesh, font, "Snake", .5)
-            snakeMesh.position.x = -3
-            snakeMesh.position.y = 6
-        })
-    
-        
+
+        init()
+
+        //Screen
         const screenGeometry = new THREE.PlaneGeometry(28, 21, 32, 32);
         const position = screenGeometry.attributes.position;
         for (let i = 0; i < position.count; i++) {
@@ -123,14 +69,12 @@ export function View(props){
         screen.position.z = -1;
         scene.add(screen)
 
+        //Effects
         composer = new EffectComposer(renderer);
         const renderPass = new RenderPass(scene, camera);
         composer.addPass(renderPass);
         const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 1.5, 0.85); 
         composer.addPass(bloomPass);
-
-        
-
         const handleResize = () => {
             renderer.setSize(window.innerWidth, window.innerHeight);
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -144,36 +88,8 @@ export function View(props){
                 mountRef.current.removeChild(renderer.domElement);
             }
           }
-
     }, [])
-    function createBoard(){
-        for(let i=0; i<cubeRefs.current.length; i++){
-            for(let j=0; j<cubeRefs.current[i].length; j++){
-            
-            scene.remove(cubeRefs.current[i][j])
-            cubeRefs.current[i][j].geometry?.dispose()
-            cubeRefs.current[i][j].material?.dispose()
-            }
-        }
-        
-        cubeRefs.current = []
-        
 
-        for(let r=0; r<props.board?.board?.length; r++){
-            cubeRefs.current[r] = []
-            for(let c=0; c<props.board?.board[0]?.length; c++){
-                const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize)
-                const material = new THREE.MeshStandardMaterial({color: 0x000000, transparent: true, opacity: 1, emissive: 0xffffff, emissiveIntensity: .9})
-                const cube = new THREE.Mesh(geometry, material)
-                cube.position.x = -3 + (camera.position.z/2) + (c * spacing)
-                cube.position.y = -5 + (camera.position.z/2) - (r * spacing)
-                scene.add(cube)
-                
-                cubeRefs.current[r][c] = cube
-            }
-        }
-        // console.debug(scene.children.length)
-    }
 
     function animate(){
         // console.debug("-----------")
@@ -239,18 +155,22 @@ export function View(props){
         }
 
         // console.debug(cubeRefs.current)
-        if(!(cubeRefs?.current?.length === props?.board?.height && cubeRefs?.current[0].length === props?.board?.width)){
-            createBoard()
+        if((cubeRefs?.length !== props?.board?.height || cubeRefs[0].length !== props?.board?.width)){
+            createBoard(props.board?.board, "val")
         }
-        if(cubeRefs.current.length){
-            for(let r=0; r<cubeRefs?.current?.length; r++){
-                for(let c=0; c<cubeRefs?.current[0]?.length; c++){
-                    const color = cubeColor(r, c)
-                    cubeRefs.current[r][c].material.color.set(color)
-                    const opacity = cubeOpacity(r, c)
-                    cubeRefs.current[r][c].material.opacity = opacity
-                    if(props.curGame==="ten"){
-                        cubeRefs.current[r][c].material.opacity = cubeOpacityTen(r, c)
+        if(cubeRefs.length){
+            for(let r=0; r<cubeRefs?.length; r++){
+                for(let c=0; c<cubeRefs[0]?.length; c++){
+                    if(cubeRefs[r][c] && props.curGame!=="ten"){
+                        const color = cubeColor(r, c)
+                        cubeRefs[r][c].material.color.set(color)
+                        const opacity = cubeOpacity(r, c)
+                        cubeRefs[r][c].material.opacity = opacity
+                    }
+
+                    else if(cubeRefs[r][c] && props.curGame==="ten"){
+                        changeText(cubeRefs[r], c, String(props.board?.board[r][c]), .5)
+                        // cubeRefs[r][c].material.opacity = cubeOpacityTen(r, c)
                     }
                 }
             }
@@ -260,39 +180,16 @@ export function View(props){
         animate()
 
     }, [props.board?.board])
+    async function updateScore(){
+        await changeText(textMeshes, 'scoreMesh', `Score ${props.score}`, .5)
+        textMeshes.scoreMesh.position.x = 8
+        textMeshes.scoreMesh.position.y = 6
+    }
     useEffect(() => {
-        loader.load(`${process.env.PUBLIC_URL}/fonts/Retrcade_Regular.json`, function (font) {
-            scoreMesh = changeText(scoreMesh, font, `Score ${props.score}`, .5)
-            scoreMesh.position.x = 8
-            scoreMesh.position.y = 6
-        })
+        updateScore()
+            
+        
     }, [props.score])
 
     return <div ref={mountRef}/>
 }
-
-// export function View(props) {
-
-//     function cellColor(rowIndex, columnIndex){
-//         const cellVal = props.board?.board[rowIndex][columnIndex]
-//         return cellVal == 3 ? 'lime' : cellVal == 2 ? 'red' : cellVal == 1 ? 'black' : 'white'
-//     }
-
-//     return (
-//         <div className='board'>
-//             {props.board?.board?.map((row, rowIndex) => {
-//                 return(<div className='row'>
-//                     {row?.map((square, columnIndex) => {
-//                         return (<div className='cell' style={{
-//                             width: `${CELL_SIZE*1}px`,
-//                             height: `${CELL_SIZE*1}px`,
-//                             background: `${cellColor(rowIndex, columnIndex)}`
-//                             }}
-//                         >
-//                         </div>)
-//                     })}
-//                 </div>)
-//             })}
-//         </div>
-//     )
-// }

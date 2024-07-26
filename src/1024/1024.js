@@ -20,6 +20,7 @@ export class Ten {
         this.score = 0
         this.ticksSinceMoved = 0
         this.pieces = []
+        
         this.#newPiece()
     }
     getWorkingBoard(){
