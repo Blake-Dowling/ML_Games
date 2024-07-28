@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { View } from './View.js'
+import { View } from './View/View.js'
 import { Timer } from './Timer.js'
 import { KeyPress } from './KeyPress.js'
 // import { Jump } from '../Jump/Jump.js'
@@ -47,10 +47,10 @@ export function Engine(props) {
         case "ten":
           newGame = new Ten()
           break
-        setBoard(newGame?.workingBoard)
-        await init(newGame)
-        setGame(newGame)
       }
+      setBoard(newGame?.getWorkingBoard())
+      await init(newGame)
+      setGame(newGame)
     }
     useEffect(() => {
       changeGame()
@@ -85,12 +85,12 @@ export function Engine(props) {
                 setBoard={setBoard}
                 />
             </div>
-            {/* <div className={"TrainingChart"}>
+            <div className={"TrainingChart"}>
                 <TrainingChart
                     agent={agent}
                     ticks={ticks}
                 />
-            </div> */}
+            </div>
             {/* <div>
               <KeyPress/>
             </div> */}

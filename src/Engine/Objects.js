@@ -317,4 +317,3 @@ export class MarioBoard extends Board{
     }
 
 }
-

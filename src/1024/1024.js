@@ -20,7 +20,7 @@ export class Ten {
         this.score = 0
         this.ticksSinceMoved = 0
         this.pieces = []
-        
+
         this.#newPiece()
     }
     getWorkingBoard(){
@@ -60,7 +60,7 @@ export class Ten {
 
         while(checkOuter(outer)){
             inner.value = initC
-            console.debug(inner.value)
+            // console.debug(inner.value)
             while(checkInner(inner)){
 
                 if(board.board[r.value+nextR][c.value+nextC] == 0){
