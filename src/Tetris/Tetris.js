@@ -31,6 +31,24 @@ export class Tetris {
     getWorkingBoard(){
         return new Board(this.workingBoard.width, this.workingBoard.height, [...this.player.pixels, ...this.restingPixels])
     }
+    keyToAction(keysPressed){
+        let action = (this.player.orientation * this.WIDTH) + (this.player.x)
+        for(let i=0; i<keysPressed.length; i++){
+            switch(keysPressed[i]){
+                case "ArrowLeft":
+                    action = ((action - 1) + (4 * this.WIDTH)) % (4 * this.WIDTH)
+                    break
+                case "ArrowRight":
+                    action = (action + 1) % (4 * this.WIDTH)
+                    break
+                case "ArrowUp":
+                    action = (action + this.WIDTH) % (4 * this.WIDTH)
+                    break
+
+            }
+        }
+        return action
+    }
     move(action){
 
         this.#movePlayer(action)

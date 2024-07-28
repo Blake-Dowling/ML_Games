@@ -41,12 +41,11 @@ export function View(props) {
         }
     }
   }, [])
-  useEffect(() => {
-    env.renderer?.render(env.scene, env.camera)
-    env.composer?.render();
-  }, [props.ticks])
+
   useEffect(() => {
     drawBoard(props.board?.board, props.curGame)
+    env.renderer?.render(env.scene, env.camera)
+    env.composer?.render();
   }, [props.board])
   useEffect(() => {
     disposeBoard()

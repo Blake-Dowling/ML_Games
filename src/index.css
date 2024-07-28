@@ -36,6 +36,24 @@ code {
   top: 40%;
   left: 22%;
 }
+.PlayerButton{
+  background: rgba(255, 255, 255, 0);
+  /* border: rgba(255, 255, 255, 0); */
+  position: absolute;
+  width: 20%;
+  height: 10%;
+  top: 20%;
+  left: 50%;
+}
+.AIButton{
+  background: rgba(255, 255, 255, 0);
+  /* border: rgba(255, 255, 255, 0); */
+  position: absolute;
+  width: 20%;
+  height: 10%;
+  top: 20%;
+  left: 70%;
+}
 .TrainingChart{
   position: absolute;
   height: 200px;

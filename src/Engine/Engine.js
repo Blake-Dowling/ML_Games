@@ -8,7 +8,7 @@ import { Snake } from '../Snake/Snake.js'
 import { Mario } from '../Mario/Mario.js'
 import { Ten } from '../1024/1024.js'
 
-import { DeepQAgent, GeneticAgent } from './Agent.js'
+import { PlayerAgent, DeepQAgent, GeneticAgent } from './Agent.js'
 import { TrainingChart } from './Chart.js'
 
 // let game = undefined
@@ -19,20 +19,29 @@ export function Engine(props) {
     const [score, setScore] = useState(0)
     const [ticks, setTicks] = useState(0)
     const [board, setBoard] = useState(null)
-    const [curGame, setCurGame] = useState("ten")
-    const [game, setGame] = useState(new Ten())
+    const [curGame, setCurGame] = useState("tetris")
+    const [mode, setMode] = useState("player")
+    const [game, setGame] = useState(null)
     const [agent, setAgent] = useState(null)
 
-    async function init(newGame){
-      let newAgent = new DeepQAgent(newGame?.modelParams)
-      await newAgent.loadModel()
-      newAgent = newAgent.copy()
+    async function initAgent(newGame){
+      let newAgent = undefined
+      switch(mode){
+        case "player":
+          newAgent = new PlayerAgent()
+          break
+        case "ai":
+          newAgent = new DeepQAgent(newGame?.modelParams)
+          await newAgent.loadModel()
+          newAgent = newAgent.copy()
+          break
+      }
       setAgent(newAgent)
     }
-    useEffect(() => {
-      init(game)
-  }, []) 
-    async function changeGame(){
+  //   useEffect(() => {
+  //     initGame()
+  // }, []) 
+    async function initGame(){
       let newGame = undefined
       switch(curGame){
         case "tetris":
@@ -49,12 +58,12 @@ export function Engine(props) {
           break
       }
       setBoard(newGame?.getWorkingBoard())
-      await init(newGame)
+      await initAgent(newGame) //Loads agent
       setGame(newGame)
     }
     useEffect(() => {
-      changeGame()
-    }, [curGame])
+      initGame()
+    }, [curGame, mode])
     useEffect(() => {
         tick()
     }, [ticks])
@@ -62,6 +71,7 @@ export function Engine(props) {
 
     async function tick(){
       await agent?.engineCycle(game)
+      console.debug(game?.getWorkingBoard().pixels)
       setBoard(game?.getWorkingBoard())
       setScore(game?.score)
     }
@@ -70,6 +80,8 @@ export function Engine(props) {
       <div className={"Engine"}>
         <button className={"TetrisButton"} onClick={()=>{if(curGame !== "tetris"){setCurGame("tetris")}}}></button>
         <button className={"SnakeButton"} onClick={()=>{if(curGame !== "snake"){setCurGame("snake")}}}></button>
+        <button className={"PlayerButton"} onClick={()=>{if(mode !== "player"){setMode("player")}}}></button>
+        <button className={"AIButton"} onClick={()=>{if(mode !== "ai"){setMode("ai")}}}></button>
         <Timer
           ticks={ticks}
           setTicks={setTicks}

@@ -1,8 +1,30 @@
 import { DeepQNetwork, GeneticArray } from '../Server/ModelManagement.js'
 import * as tf from '@tensorflow/tfjs'
 
-class Agent {
+class Agent{
   constructor(){
+  }
+}
+export class PlayerAgent extends Agent{
+  constructor(){
+    super()
+    this.keysPressed = []
+    document.addEventListener('keydown', this.handleKeyDown.bind(this))
+
+  }
+  handleKeyDown(event){
+    this.keysPressed.push(event.key)
+  }
+  async engineCycle(game){
+    const action = game?.keyToAction(this.keysPressed)
+    this.keysPressed = []
+    game?.move(action)
+    game?.getResult()
+  }
+}
+class AIAgent extends Agent{
+  constructor(){
+    super()
     this.highScore = 0
   }
   async getPrediction(state){
@@ -51,7 +73,7 @@ class Agent {
   }
 }
 
-export class DeepQAgent extends Agent {
+export class DeepQAgent extends AIAgent {
   constructor(params){
     super()
     this.BATCH_SIZE = 1024
@@ -145,7 +167,7 @@ export class DeepQAgent extends Agent {
   }
 }
 
-export class GeneticAgent extends Agent{
+export class GeneticAgent extends AIAgent{
   constructor(params, sequenceLength, populationSize){
     super()
       this.BATCH_SIZE = populationSize * sequenceLength
