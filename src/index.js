@@ -4,7 +4,6 @@ import './index.css'
 
 import { Routes, Route, Link, BrowserRouter } from 'react-router-dom'
 import { Home } from './Home/Home.js'
-import { Jump } from './Jump/Jump.js'
 import { Tetris } from './Tetris/Tetris.js'
 import { Engine } from './Engine/Engine.js'
 

@@ -59,6 +59,28 @@ export class Snake {
         }
         this.ticksSinceAte = 0
     }
+    keyToAction(keysPressed){
+        let dir = this.direction
+        for(let i=0; i<keysPressed.length; i++){
+            switch(keysPressed[i]){
+                case "ArrowRight":
+                    dir = 0
+                    break
+                case "ArrowDown":
+                    dir = 1
+                    break
+                case "ArrowLeft":
+                    dir = 2
+                    break
+                case "ArrowUp":
+                    dir = 3
+                    break
+            }
+        }
+        let action = ((dir - this.direction) + 4) % 4
+        action = (action<3) * (-(Math.abs(action-1)) + 2)
+        return action
+    }
     #movePlayer(action){
 
         this.direction = (((this.direction + (parseInt(action) - 1)) % 4) + 4) % 4

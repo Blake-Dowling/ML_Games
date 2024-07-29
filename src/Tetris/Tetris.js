@@ -44,7 +44,6 @@ export class Tetris {
                 case "ArrowUp":
                     action = (action + this.WIDTH) % (4 * this.WIDTH)
                     break
-
             }
         }
         return action

@@ -19,7 +19,7 @@ export function Engine(props) {
     const [score, setScore] = useState(0)
     const [ticks, setTicks] = useState(0)
     const [board, setBoard] = useState(null)
-    const [curGame, setCurGame] = useState("tetris")
+    const [curGame, setCurGame] = useState("ten")
     const [mode, setMode] = useState("player")
     const [game, setGame] = useState(null)
     const [agent, setAgent] = useState(null)
@@ -71,7 +71,6 @@ export function Engine(props) {
 
     async function tick(){
       await agent?.engineCycle(game)
-      console.debug(game?.getWorkingBoard().pixels)
       setBoard(game?.getWorkingBoard())
       setScore(game?.score)
     }

@@ -13,7 +13,7 @@ export class Ten {
         this.HEIGHT = 4
  
 
-        this.modelParams = ['ten-model', 16, 4] //7
+        this.modelParams = ['ten-model', 16, 5] //7
         this.initGame()
     }
     initGame(){
@@ -39,24 +39,46 @@ export class Ten {
         }
         this.pieces.push(newPiece)
     }
+    keyToAction(keysPressed){
+        let action = 0
+        for(let i=0; i<keysPressed.length; i++){
+            switch(keysPressed[i]){
+                case "ArrowRight":
+                    action = 1
+                    break
+                case "ArrowDown":
+                    action = 2
+                    break
+                case "ArrowLeft":
+                    action = 3
+                    break
+                case "ArrowUp":
+                    action = 4
+                    break
+            }
+        }
+        return action
+    }
     #movePieces(action){
-
+        if(action == 0){
+            return
+        }
         const board = this.getWorkingBoard()
         if(!board?.board?.length || !(board?.board?.length == board?.board[0].length)){
             return
         }
-        let initR = action == 0 || action == 1 ? board.board.length-2 : 1
-        let initC = action == 0 || action == 3 ? board.board[0].length-2 : 1
+        let initR = action == 1 || action == 2 ? board.board.length-2 : 1
+        let initC = action == 1 || action == 4 ? board.board[0].length-2 : 1
         const r = { value: initR }
         const c = { value: initC }
-        let checkOuter = action == 0 || action == 1 ? (x) => {return x.value>=0} : (x) => {return x.value<board.board.length}
-        let checkInner = action == 0 || action == 3 ? (x) => {return x.value>=0} : (x) => {return x.value<board.board.length}
-        let incOuter = action == 0 || action == 1 ? (x) => x.value-- : (x) => x.value++
-        let incInner = action == 0 || action == 3 ? (x) => x.value-- : (x) => x.value++
-        let nextR = action == 0 || action == 2 ? 0 : action == 1 ? 1 : -1
-        let nextC = action == 1 || action == 3 ? 0 : action == 0 ? 1 : -1
-        const outer = action == 0 || action == 2 ? c : r
-        const inner = action == 1 || action == 3 ? c : r
+        let checkOuter = action == 1 || action == 2 ? (x) => {return x.value>=0} : (x) => {return x.value<board.board.length}
+        let checkInner = action == 1 || action == 4 ? (x) => {return x.value>=0} : (x) => {return x.value<board.board.length}
+        let incOuter = action == 1 || action == 2 ? (x) => x.value-- : (x) => x.value++
+        let incInner = action == 1 || action == 4 ? (x) => x.value-- : (x) => x.value++
+        let nextR = action == 1 || action == 3 ? 0 : action == 2 ? 1 : -1
+        let nextC = action == 2 || action == 4 ? 0 : action == 1 ? 1 : -1
+        const outer = action == 1 || action == 3 ? c : r
+        const inner = action == 2 || action == 4 ? c : r
 
         while(checkOuter(outer)){
             inner.value = initC
@@ -90,7 +112,10 @@ export class Ten {
     move(action){
 
         this.#movePieces(action)
-        this.#newPiece()
+        if(action){
+            this.#newPiece()
+        }
+
     }
     getResult(){
         this.ticksSinceMoved ++

@@ -173,6 +173,24 @@ export class Mario {
         const workingBoard = this.getWorkingBoard()
         return workingBoard.board?.flat()
     }
+    keyToAction(keysPressed){
+        let dir = 0
+        let jump = 0
+        for(let i=0; i<keysPressed.length; i++){
+            switch(keysPressed[i]){
+                case "ArrowRight":
+                    dir = 2
+                    break
+                case "ArrowLeft":
+                    dir = 1
+                    break
+                case "ArrowUp":
+                    jump = 2
+                    break
+            }
+        }
+        return dir + jump
+    }
     move(action){
         // action=1
         // console.debug(action)
