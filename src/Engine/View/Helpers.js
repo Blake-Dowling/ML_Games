@@ -50,6 +50,14 @@ export async function init(){
     const titleMesh = new THREE.Mesh(await newTextGeometry("Deep Q Arcade", 0.7), env.defaultMaterial.clone())
     titleMesh.position.set(0, 12)
     env.scene.add(titleMesh)
+
+    const playerMesh = new THREE.Mesh(await newTextGeometry("Play", 0.5), env.defaultMaterial.clone())
+    playerMesh.position.set(7, 10)
+    env.scene.add(playerMesh)
+    const aiMesh = new THREE.Mesh(await newTextGeometry("AI", 0.5), env.defaultMaterial.clone())
+    aiMesh.position.set(13, 10)
+    env.scene.add(aiMesh)
+
     const selectMesh = new THREE.Mesh(await newTextGeometry("Select Game: ", 0.5), env.defaultMaterial.clone())
     selectMesh.position.set(-5, 10)
     env.scene.add(selectMesh)
@@ -59,6 +67,13 @@ export async function init(){
     const snakeMesh = new THREE.Mesh(await newTextGeometry("Snake", 0.5), env.defaultMaterial.clone())
     snakeMesh.position.set(-3, 6)
     env.scene.add(snakeMesh)
+
+    const marioMesh = new THREE.Mesh(await newTextGeometry("Mario", 0.5), env.defaultMaterial.clone())
+    marioMesh.position.set(-3, 4)
+    env.scene.add(marioMesh)
+    const tenMesh = new THREE.Mesh(await newTextGeometry("1024", 0.5), env.defaultMaterial.clone())
+    tenMesh.position.set(-3, 2)
+    env.scene.add(tenMesh)
     //Screen
     const screenGeometry = new THREE.PlaneGeometry(28, 21, 32, 32);
     const position = screenGeometry.attributes.position;
@@ -129,7 +144,7 @@ export async function drawBoard(board, curGame){
                 }
                 const boardVal = board[r][c] //Board cell value
                 if(curGame === "ten"){ //1024, change geometry
-                    const numGeometryIndex = boardVal == 0 ? 0 : Math.floor(Math.log2(boardVal)) + 1 //+1 because 0 included in array index 0 instead of 1
+                    const numGeometryIndex = boardVal == 0 ? 0 : parseInt(Math.log2(boardVal)) + 1 //+1 because 0 included in array index 0 instead of 1
                     const geometry =  env.numGeometries[numGeometryIndex].clone() //Corresponding geometry
                     updateGeometry(env.boardMeshes[r][c], geometry)
                 }

@@ -64,6 +64,7 @@ export class Ten {
             return
         }
         const board = this.getWorkingBoard()
+        console.debug(board.board)
         if(!board?.board?.length || !(board?.board?.length == board?.board[0].length)){
             return
         }
@@ -119,7 +120,7 @@ export class Ten {
     }
     getResult(){
         this.ticksSinceMoved ++
-        const timeout = this.ticksSinceMoved >= 10
+        const timeout = false//this.ticksSinceMoved >= 10
 
         const full = this.#checkFull()
         if(full || timeout){
