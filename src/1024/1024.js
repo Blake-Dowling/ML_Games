@@ -59,50 +59,78 @@ export class Ten {
         }
         return action
     }
+    #rotateBoard(prevBoard, numRotations){
+        let prevBoardCopy = prevBoard.map(row => row.slice())
+        const newBoard = prevBoard.map(row => row.slice())
+        numRotations = ((numRotations % 4) + 4) % 4
+        for(let i=0; i<numRotations; i++){
+            for(let r=0; r<prevBoardCopy.length; r++){
+                for(let c=0; c<prevBoardCopy.length; c++){
+                    let newRow = c
+                    let newColumn = (newBoard[c].length - 1) - r
+                    newBoard[newRow][newColumn] = prevBoardCopy[r][c]
+                }
+            }
+            prevBoardCopy = newBoard.map(row => row.slice())
+        }
+        return newBoard
+    }
+    // #addRow(){}
     #movePieces(action){
+        let moved = false
         if(action == 0){
-            return
+            return moved
         }
         const board = this.getWorkingBoard()
-        console.debug(board.board)
         if(!board?.board?.length || !(board?.board?.length == board?.board[0].length)){
-            return
+            return moved
         }
-        let initR = action == 1 || action == 2 ? board.board.length-2 : 1
-        let initC = action == 1 || action == 4 ? board.board[0].length-2 : 1
-        const r = { value: initR }
-        const c = { value: initC }
-        let checkOuter = action == 1 || action == 2 ? (x) => {return x.value>=0} : (x) => {return x.value<board.board.length}
-        let checkInner = action == 1 || action == 4 ? (x) => {return x.value>=0} : (x) => {return x.value<board.board.length}
-        let incOuter = action == 1 || action == 2 ? (x) => x.value-- : (x) => x.value++
-        let incInner = action == 1 || action == 4 ? (x) => x.value-- : (x) => x.value++
-        let nextR = action == 1 || action == 3 ? 0 : action == 2 ? 1 : -1
-        let nextC = action == 2 || action == 4 ? 0 : action == 1 ? 1 : -1
-        const outer = action == 1 || action == 3 ? c : r
-        const inner = action == 2 || action == 4 ? c : r
-
-        while(checkOuter(outer)){
-            inner.value = initC
-            // console.debug(inner.value)
-            while(checkInner(inner)){
-
-                if(board.board[r.value+nextR][c.value+nextC] == 0){
-                    board.board[r.value+nextR][c.value+nextC] = board.board[r.value][c.value]
-                    board.board[r.value][c.value] = 0
-                    this.ticksSinceMoved = 0
+        let workingBoard = board.board
+        // console.debug(action, workingBoard)
+        workingBoard = this.#rotateBoard(workingBoard, -(action-1))
+        for(let r=0; r<workingBoard.length; r++){
+            //Add row
+            for(let c1=workingBoard[r].length-1; c1>=1; c1--){
+                if(workingBoard[r][c1] == 0){
+                    continue
                 }
-                else if(board.board[r.value+nextR][c.value+nextC] == board.board[r.value][c.value]){
-                    board.board[r.value+nextR][c.value+nextC] *= 2
-                    board.board[r.value][c.value] = 0
-                    this.score ++
-                    this.ticksSinceMoved = 0
+                for(let c2=c1-1; c2>=0; c2--){
+                    if(workingBoard[r][c2] != 0 && workingBoard[r][c1] != workingBoard[r][c2]){
+                        break
+                    }
+                    if(workingBoard[r][c1] == workingBoard[r][c2]){
+                        workingBoard[r][c1] *= 2
+                        workingBoard[r][c2] = 0
+                        moved = true
+                        break
+                    }
                 }
-                incInner(inner)
             }
-            incOuter(outer)
-        }
+            //Move columns
+            let pops = workingBoard[r].length
+            let c = workingBoard[r].length - 1
+            while(pops > 0 && workingBoard[r][c] >= 0){
+                if(workingBoard[r][c] == 0){
+                    workingBoard[r].unshift(workingBoard[r].splice(c, 1))
+                    if(workingBoard[r][c] != 0){
+                        moved = true
+                    }
+                }
+                else{
+                    c --
+                }
+                pops --
+            }
 
+        }
+        workingBoard = this.#rotateBoard(workingBoard, (action-1))
+        // console.debug(workingBoard)
+        board.board = workingBoard
+        board.update()
+        // console.debug(board.board)
         this.pieces = board.getPixels()
+        // console.debug(this.pieces)
+        return moved
     }
 
 
@@ -112,8 +140,8 @@ export class Ten {
     }
     move(action){
 
-        this.#movePieces(action)
-        if(action){
+        const moved = this.#movePieces(action)
+        if(action && moved){
             this.#newPiece()
         }
 

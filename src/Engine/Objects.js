@@ -71,6 +71,15 @@ export class Board{
         }
         this.board = rows
     }
+    update(){
+        const newPixels = []
+        for(let r=0; r<this.height; r++){
+            for(let c=0; c<this.width; c++){
+                newPixels.push(new Pixel(c, r, this.board[r][c]))
+            }
+        }
+        this.pixels = newPixels
+    }
     ob(pixel){
         return pixel.x < 0 || pixel.x >= this.width || pixel.y < 0 || pixel.y >= this.height
     }

@@ -123,7 +123,7 @@ export async function newTextGeometry(text, size){
     })
 }
 export async function drawBoard(board, curGame){
-    if(curGame === "ten" && !env.numGeometries?.length){
+    if(curGame === "ten" && !env.numGeometries){
         env.numGeometries = []
         env.numGeometries.push(await newTextGeometry(String(0), 0.8))
         for(let i=0; i<16; i++){
@@ -143,14 +143,15 @@ export async function drawBoard(board, curGame){
                     env.boardMeshes[r][c].position.y = -5 + (env.camera.position.z/2) - (r * spacing)
                 }
                 const boardVal = board[r][c] //Board cell value
+                
                 if(curGame === "ten"){ //1024, change geometry
                     const numGeometryIndex = boardVal == 0 ? 0 : parseInt(Math.log2(boardVal)) + 1 //+1 because 0 included in array index 0 instead of 1
                     const geometry =  env.numGeometries[numGeometryIndex].clone() //Corresponding geometry
                     updateGeometry(env.boardMeshes[r][c], geometry)
                 }
-                else{ //Other games, change material opacity
+                // else{ //Other games, change material opacity
                     env.boardMeshes[r][c].material.opacity = boardVal > 0 ? 1 : 0.02
-                }
+                // }
             }
         }
     }
