@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/ML_Games/static/css/main.661c0ae1.css",
-    "main.js": "/ML_Games/static/js/main.7749d947.js",
+    "main.css": "/ML_Games/static/css/main.cb637f0b.css",
+    "main.js": "/ML_Games/static/js/main.8827c816.js",
     "index.html": "/ML_Games/index.html",
-    "main.661c0ae1.css.map": "/ML_Games/static/css/main.661c0ae1.css.map",
-    "main.7749d947.js.map": "/ML_Games/static/js/main.7749d947.js.map"
+    "main.cb637f0b.css.map": "/ML_Games/static/css/main.cb637f0b.css.map",
+    "main.8827c816.js.map": "/ML_Games/static/js/main.8827c816.js.map"
   },
   "entrypoints": [
-    "static/css/main.661c0ae1.css",
-    "static/js/main.7749d947.js"
+    "static/css/main.cb637f0b.css",
+    "static/js/main.8827c816.js"
   ]
 }
